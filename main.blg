@@ -1,0 +1,351 @@
+This is BibTeX, Version 0.99d (TeX Live 2018)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: main.aux
+The style file: biblatex.bst
+A level-1 auxiliary file: Chapters/Chapter1.aux
+A level-1 auxiliary file: Chapters/Chapter2.aux
+A level-1 auxiliary file: Chapters/Chapter3.aux
+A level-1 auxiliary file: Chapters/Chapter4.aux
+A level-1 auxiliary file: Chapters/Chapter5.aux
+A level-1 auxiliary file: Chapters/Chapter6.aux
+A level-1 auxiliary file: Chapters/Chapter7.aux
+A level-1 auxiliary file: Chapters/Chapter8.aux
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=20001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated field_info (elt_size=4) to 33356 items from 5000.
+Database file #1: main-blx.bib
+Database file #2: example.bib
+Database file #3: dgner.bib
+Repeated entry---line 98 of file dgner.bib
+ : @article{krishnamurthy2015learning
+ :                                   ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 125 of file dgner.bib
+ : @inproceedings{ling2012fine
+ :                            ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 181 of file dgner.bib
+ : @inproceedings{de2006generating
+ :                                ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 268 of file dgner.bib
+ : @inproceedings{sasano2008japanese
+ :                                  ,
+I'm skipping whatever remains of this entry
+Database file #4: depner.bib
+Repeated entry---line 70 of file depner.bib
+ : @inproceedings{tjong2003introduction
+ :                                     ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 78 of file depner.bib
+ : @article{weischedel2013ontonotes
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 86 of file depner.bib
+ : @inproceedings{sasano2008japanese
+ :                                  ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 94 of file depner.bib
+ : @inproceedings{ling2012fine
+ :                            ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 102 of file depner.bib
+ : @article{cucchiarelli2001unsupervised
+ :                                      ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 113 of file depner.bib
+ : @inproceedings{jie2017efficient
+ :                                ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 129 of file depner.bib
+ : @inproceedings{liu2010recognizing
+ :                                  ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 146 of file depner.bib
+ : @article{cortes1995support
+ :                           ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 158 of file depner.bib
+ : @inproceedings{sarawagi2004semi
+ :                                ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 166 of file depner.bib
+ : @inproceedings{finkel2009joint
+ :                               ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 198 of file depner.bib
+ : @article{hochreiter1997long
+ :                            ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 226 of file depner.bib
+ : @inproceedings{ratinov2009design
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 324 of file depner.bib
+ : @inproceedings{lafferty2001conditional
+ :                                       ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 332 of file depner.bib
+ : @inproceedings{de2006generating
+ :                                ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 349 of file depner.bib
+ : @inproceedings{koo2010efficient
+ :                                ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 420 of file depner.bib
+ : @inproceedings{finkel2005incorporating
+ :                                       ,
+I'm skipping whatever remains of this entry
+Database file #5: dht.bib
+Repeated entry---line 101 of file dht.bib
+ : @article{reddy2016transforming
+ :                               ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 110 of file dht.bib
+ : @article{krishnamurthy2015learning
+ :                                   ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 147 of file dht.bib
+ : @inproceedings{susanto2017neural
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 154 of file dht.bib
+ : @inproceedings{koo2010efficient
+ :                                ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 161 of file dht.bib
+ : @incollection{eisner2000bilexical
+ :                                  ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 223 of file dht.bib
+ : @inproceedings{nivre2006maltparser
+ :                                   ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 230 of file dht.bib
+ : @inproceedings{chen2014fast
+ :                            ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 273 of file dht.bib
+ : @inproceedings{jones2012semantic
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 296 of file dht.bib
+ : @inproceedings{lafferty2001conditional
+ :                                       ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 324 of file dht.bib
+ : @inproceedings{mcdonald2005online
+ :                                  ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 359 of file dht.bib
+ : @inproceedings{lample2016neural
+ :                                ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 393 of file dht.bib
+ : @article{hochreiter1997long
+ :                            ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 417 of file dht.bib
+ : @inproceedings{zelle1996learning
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 446 of file dht.bib
+ : @inproceedings{poon2013grounded
+ :                                ,
+I'm skipping whatever remains of this entry
+Database file #6: incomp.bib
+Repeated entry---line 1 of file incomp.bib
+ : @inproceedings{ma2016end
+ :                         ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 17 of file incomp.bib
+ : @inproceedings{lample2016neural
+ :                                ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 25 of file incomp.bib
+ : @inproceedings{D17-1035
+ :                        ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 144 of file incomp.bib
+ : @inproceedings{lafferty2001conditional
+ :                                       ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 169 of file incomp.bib
+ : @article{liu1989limited
+ :                        ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 247 of file incomp.bib
+ : @inproceedings{yang2014semi
+ :                            ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 255 of file incomp.bib
+ : @inproceedings{tjong2003introduction
+ :                                     ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 306 of file incomp.bib
+ : @incollection{ramshaw1999text
+ :                              ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 330 of file incomp.bib
+ : @inproceedings{ratinov2009design
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 348 of file incomp.bib
+ : @inproceedings{quattoni2005conditional
+ :                                       ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 356 of file incomp.bib
+ : @article{hochreiter1997long
+ :                            ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 367 of file incomp.bib
+ : @inproceedings{jie2018dependency
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 375 of file incomp.bib
+ : @inproceedings{jie2017efficient
+ :                                ,
+I'm skipping whatever remains of this entry
+Database file #7: sql.bib
+Repeated entry---line 29 of file sql.bib
+ : @inproceedings{dong2018coarse
+ :                              ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 58 of file sql.bib
+ : @article{hochreiter1997long
+ :                            ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 118 of file sql.bib
+ : @inproceedings{dong2016language
+ :                                ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 227 of file sql.bib
+ : @inproceedings{flanigan2014discriminative
+ :                                          ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 234 of file sql.bib
+ : @inproceedings{jie2018dependency
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 241 of file sql.bib
+ : @inproceedings{lu2014semantic
+ :                              ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 248 of file sql.bib
+ : @inproceedings{zelle1996learning
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 255 of file sql.bib
+ : @inproceedings{kate2005learning
+ :                                ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 262 of file sql.bib
+ : @inproceedings{cheng2017learning
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 269 of file sql.bib
+ : @inproceedings{lafferty2001conditional
+ :                                       ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 276 of file sql.bib
+ : @inproceedings{quattoni2005conditional
+ :                                       ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 283 of file sql.bib
+ : @article{liu1989limited
+ :                        ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 294 of file sql.bib
+ : @article{baker1979trainable
+ :                            ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 304 of file sql.bib
+ : @incollection{eisner2000bilexical
+ :                                  ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 313 of file sql.bib
+ : @inproceedings{koo2010efficient
+ :                                ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 320 of file sql.bib
+ : @inproceedings{shi2017fast
+ :                           ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 327 of file sql.bib
+ : @inproceedings{durrett2015neural
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 335 of file sql.bib
+ : @inproceedings{yu2018spider
+ :                            ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 343 of file sql.bib
+ : @inproceedings{zettlemoyer2005learning
+ :                                       ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 357 of file sql.bib
+ : @inproceedings{banarescu2013abstract
+ :                                     ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 410 of file sql.bib
+ : @inproceedings{lu2008generative
+ :                                ,
+I'm skipping whatever remains of this entry
+Biblatex version: 3.8
+Reallocated wiz_functions (elt_size=4) to 9000 items from 6000.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+You've used 204 entries,
+            6268 wiz_defined-function locations,
+            2058 strings with 43703 characters,
+and the built_in function-call counts, 1207017 in all, are:
+= -- 80203
+> -- 23473
+< -- 5831
++ -- 31865
+- -- 9604
+* -- 94926
+:= -- 125190
+add.period$ -- 0
+call.type$ -- 204
+change.case$ -- 2326
+chr.to.int$ -- 31
+cite$ -- 406
+duplicate$ -- 136897
+empty$ -- 110891
+format.name$ -- 15714
+if$ -- 244438
+int.to.chr$ -- 0
+int.to.str$ -- 463
+missing$ -- 0
+newline$ -- 7438
+num.names$ -- 8736
+pop$ -- 72118
+preamble$ -- 1
+purify$ -- 3726
+quote$ -- 0
+skip$ -- 34597
+stack$ -- 0
+substring$ -- 128736
+swap$ -- 32983
+text.length$ -- 6001
+text.prefix$ -- 203
+top$ -- 1
+type$ -- 6922
+warning$ -- 0
+while$ -- 15858
+width$ -- 0
+write$ -- 7235
+(There were 68 error messages)

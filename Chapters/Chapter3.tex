@@ -1,0 +1,1517 @@
+% Chapter Template
+
+\chapter{Dependency-Guided Named Entity Recognition} % Main chapter title
+
+\label{Chapter3} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
+
+%----------------------------------------------------------------------------------------
+%	SECTION 1
+%----------------------------------------------------------------------------------------
+
+\section{Motivation}
+
+Existing research efforts have exploited dependency structured information by designing dependency-related local features  that can be used in the NER models~\cite{sasano2008japanese,ling2012fine,cucchiarelli2001unsupervised}. 
+Figure \ref{fig:dgmexample} shows two example phrases annotated with both dependency and named entity information. 
+The local features are usually the head word and its part-of-speech tag at current position. 
+For example, ``{\em Shlomo}'' with entity tag \textsc{b-per} in the first sentence has two local dependency features, head word ``{\em Ami}'' and  head tag ``{\em \textsc{nnp}}''. 
+However, such a simple treatment of dependency structures largely ignores the global structured information conveyed by the dependency trees, which can be potentially useful in building NER models.
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{\linewidth}
+		\centering
+		\begin{tikzpicture}[node distance=2.0mm and 5.0mm, >=Stealth, 	place/.style={draw=none, inner sep=0pt}]
+		\node [](anode) [] {\footnotesize Foreign};
+		\node [](bnode) [right=of anode, xshift=-2mm, yshift=0.28mm] {\footnotesize Minister};
+		\node [](cnode) [right=of bnode, xshift=-2mm] {\footnotesize Shlomo};
+		\node [](dnode) [right=of cnode, xshift=-2mm] {\footnotesize Ben};
+		\node [](enode) [right=of dnode, xshift=3mm] {\footnotesize -};
+		\node [](fnode) [right=of enode, xshift=3mm] {\footnotesize Ami};
+		\node [](gnode) [right=of fnode, yshift=-0.57mm] {\footnotesize gave};
+		\node [place](hnode) [right=of gnode, yshift=0.3mm] {\footnotesize a};
+		\node [place](inode) [right=of hnode, yshift=0.3mm, xshift=2mm] {\footnotesize talk};
+		
+		\node [](at) [below=of anode,yshift=3.0mm]{\scriptsize NNP};
+		\node [](bt) [below=of bnode,yshift=2.39mm] {\scriptsize NNP};
+		\node [](ct) [below=of cnode,yshift=2.39mm] {\scriptsize NNP};
+		\node [](dt) [below=of dnode,yshift=2.39mm]{\scriptsize NNP};
+		\node [](et) [below=of enode,yshift=1.7mm]{\scriptsize HYPH};
+		\node [](ft) [below=of fnode,yshift=2.39mm]{\scriptsize NNP};
+		\node [](gt) [below=of gnode,yshift=2.95mm]{\scriptsize VBD};
+		\node [place](ht) [below=of hnode]{\scriptsize DT};
+		\node [place](it) [below=of inode,yshift=0.05mm]{\scriptsize NN};
+		
+		\node [](ae) [below=of at,yshift=2.45mm]{\small \textsc{o}};
+		\node [](be) [below=of bt,yshift=2.5mm] {\small \textsc{o}};
+		\node [](ce) [below=of ct,yshift=2.5mm] {\small \textsc{b-per}};
+		\node [](de) [below=of dt,yshift=2.5mm]{\small \textsc{i-per}};
+		\node [](ee) [below=of et,yshift=2.5mm]{\small \textsc{i-per}};
+		\node [](fe) [below=of ft,yshift=2.5mm]{\small \textsc{i-per}};
+		\node [](ge) [below=of gt,yshift=2.5mm]{\small \textsc{o}};
+		\node [place](he) [below=of ht,yshift=0.1mm]{\small \textsc{o}};
+		\node [place](ie) [below=of it,yshift=0.1mm]{\small \textsc{o}};
+		
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (bnode) to [out=110,in=40, looseness=1] node [above] {} (anode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (fnode) to [out=120,in=60, looseness=0.8] node [above] {} (bnode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (fnode) to [out=120,in=60, looseness=0.8] node [above] {} (cnode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (fnode) to [out=120,in=45, looseness=1] node [above] {} (dnode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (fnode) to [out=120,in=45, looseness=1] node [above] {} (enode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (gnode) to [out=120,in=45, looseness=1.2] node [above] {} (fnode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (gnode) to [out=70,in=100, looseness=1.2] node [above] {} (inode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (inode) to [out=120,in=60, looseness=1.8] node [above] {} (hnode);
+		\end{tikzpicture} 
+	\end{subfigure}
+	\begin{subfigure}[b]{\linewidth}
+		\centering
+		\begin{tikzpicture}[node distance=2.0mm and 5.0mm, >=Stealth, 	place/.style={draw=none, inner sep=0pt}]
+		\node [](anode) [] {\footnotesize The};
+		\node [](bnode) [right=of anode] {\footnotesize House};
+		\node [](cnode) [right=of bnode] {\footnotesize of};
+		\node [](dnode) [right=of cnode, yshift=-0.3mm] {\footnotesize Representatives};
+		\node [](enode) [right=of dnode, xshift=-2mm, yshift=0.2mm] {\footnotesize votes};
+		\node [](fnode) [right=of enode, yshift=-0.2mm] {\footnotesize on};
+		\node [place](gnode) [right=of fnode, xshift=0.5mm, yshift=0.35mm] {\footnotesize the};
+		\node [place](hnode) [right=of gnode, xshift=1.5mm, yshift=-0.35mm] {\footnotesize measure};
+		
+		\node [](at) [below=of anode,yshift=2.3mm]{\scriptsize DT};
+		\node [](bt) [below=of bnode,yshift=2.3mm] {\scriptsize NNP};
+		\node [](ct) [below=of cnode,yshift=2.3mm] {\scriptsize IN};
+		\node [](dt) [below=of dnode,yshift=2.9mm]{\scriptsize NNPS};
+		\node [](et) [below=of enode,yshift=2.2mm]{\scriptsize VB};
+		\node [](ft) [below=of fnode,yshift=2.2mm]{\scriptsize IN};
+		\node [place](gt) [below=of gnode, yshift=-0.1mm]{\scriptsize DT};
+		\node [place](ht) [below=of hnode, yshift=-0.1mm]{\scriptsize NN};
+		
+		\node [](ae) [below=of at,yshift=2.25mm]{\small \textsc{b-org}};
+		\node [](be) [below=of bt,yshift=2.25mm] {\small \textsc{i-org}};
+		\node [](ce) [,below=of ct,yshift=2.3mm] {\small \textsc{i-org}};
+		\node [](de) [below=of dt,yshift=2.35mm]{\small \textsc{i-org}};
+		\node [](ee) [below=of et,yshift=2.33mm]{\small \textsc{o}};
+		\node [](fe) [below=of ft,yshift=2.33mm]{\small \textsc{o}};
+		\node [place](ge) [below=of gt, yshift=-0.1mm]{\small \textsc{o}};
+		\node [place](he) [below=of ht, yshift=-0.05mm]{\small \textsc{o}};
+		
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (bnode) to [out=120,in=40, looseness=1.5] node [above] {} (anode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (enode) to [out=120,in=60, looseness=0.89] node [above] {} (bnode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (bnode) to [out=50,in=130, looseness=1.4] node [above] {} (cnode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (cnode) to [out=60,in=120, looseness=1] node [above] {} (dnode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (enode) to [out=70,in=125, looseness=1.4] node [above] {} (fnode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (fnode) to [out=70,in=100, looseness=1.2] node [above] {} (hnode);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (hnode) to [out=120,in=50, looseness=1.4] node [above] {} (gnode);
+		\end{tikzpicture}
+	\end{subfigure}
+	\caption{Two sentences annotated with both dependency and named entity information. The edges on top of words represent the dependencies and the labels with IOB encoding are the entity types.}
+	\label{fig:dgmexample}
+\end{figure}
+
+
+One key observation we can make in Figure \ref{fig:dgmexample} is that named entities are often covered by a single or multiple consecutive dependency arcs.
+In the first example, the named entity ``{\em Shlomo Ben - Ami}'' of type \textsc{per} ({\em person}) is completely covered by the single dependency arc from ``{\em Ami}'' to ``{\em Shlomo}''. 
+Similarly, the named entity ``{\em The House of Representatives}'' of type \textsc{org} ({\em organization}) in the second example is covered by multiple  arcs which are adjacent to each other. 
+Such information can potentially be the global features we can obtain from the dependency trees. 
+This leads to the following questions: 1) can such global structured information conveyed by dependency trees be exploited for improved NER, and 2) if so, how to build new NER models where such information can be explicitly incorporated?
+
+With these two questions,  we perform some investigations on how to better utilize the structured information conveyed by dependency trees for building novel models for improved named entity recognition.
+The model assumes the availability of dependency trees before performing NER, which can be obtained from a dependency parser or given as part of the input.
+Unlike existing approaches that only exploit dependency structures for encoding local features, the model is able to explicitly take into account the global  structured information conveyed by dependency trees when performing learning and inference.
+We call our proposed NER model the {\em dependency-guided} model (\textsc{dgm}), and build it based on the conventional semi-Markov conditional random fields (semi-CRFs)~\cite{sarawagi2004semi}, a classic model used for information extraction.
+
+\section{Related Work}
+Named entity recognition has a long history in the field of natural language processing. 
+One standard approach to NER is to regard the problem as a sequence labeling problem,
+where each word is assigned a tag, indicating whether the word belongs to part of any named entity or appears outside of all entities.
+Previous approaches used sequence labeling models such as hidden Markov models (HMMs)~\cite{zhou2002named}, maximum entropy Markov models (MEMMs)~\cite{mccallum2000maximum}, as well as linear-chain~\cite{finkel2005incorporating} and semi-Markov conditional random fields (CRFs/semi-CRFs)~\cite{sarawagi2004semi}. 
+\citet{muis2016weak} proposed a weak semi-CRFs model which has a lower complexity than the conventional semi-CRFs model while still having a higher complexity than the linear-chain CRFs model. 
+Our model is proved to have the same time complexity as linear-chain CRFs model in the average case. 
+%To have a better performance, either adding more useful features or exploiting a more complex model is required. 
+The quality of the CRFs model typically depends on the features that are used.
+While most research efforts exploited standard word-level features~\cite{ratinov2009design}, more sophisticated features can also be used. 
+\citet{ling2012fine} showed that using syntactic-level features from dependency structures in a CRFs-based model can lead to improved NER performance.
+Such dependency structures were also used in the work by \citet{liu2010recognizing},
+where the authors utilized such structures for building a skip-chain variant of the original CRFs model.
+This shows that some simple structured information conveyed by dependency trees can be exploited for improved NER. 
+%Another more complex models like semi-CRFs \cite{sarawagi2004semi} is known to be generally better than linear-chain CRF though the complexity is higher. 
+In their skip-chain CRFs model, they simply added certain dependency arcs as additional dependencies in the graphical model, resulting in loopy structures.
+However, such a model did not explicitly explore the relation between entities and global structured information of the dependency trees.
+The authors also showed that such a model does not outperform a simpler approach that adds additional dependencies between similar words only on top of the original CRFs model.
+%
+% they did not consider any entity information given the dependency structure but just simply adding the skip edges to produce more cliques in their graphical model. 
+%	Moreover, they need to carefully link such skip edges since it may cause the inference their graphical model intractable. 
+In this work, we also focus on utilizing dependency structures for improving NER.
+Unlike previous approaches, we focus on exploiting the global structured information conveyed by dependency trees to improve the NER process. Comparing with the semi-CRFs model, our  model is not only able to perform competitively in terms of performance, but also more {\em efficient} in terms of running time.
+
+There are also some existing works that focus on improving the efficiency of NER and other information extraction models.
+For example, \citet{okanohara2006improving} used a separate naive Bayes classifier to filter some entities during training and inference in their semi-CRFs based model.
+While the filtering process was used to reduce the computational cost of the semi-CRFs model, the model still needs to enumerate all the possible chunks. 
+\citet{yang2012extracting} extended the original semi-CRFs for extracting opinion expressions and used the constituency parse tree information to avoid constructing implausible segments. 
+\citet{lu2015joint} proposed an efficient and scalable model using hypergraph which can handle overlapping entities. 
+\citet{muis2016learning} extended the hypergraph representation to recognize both contiguous and discontiguous entities. 
+%-----------------------------------
+%	SUBSECTION 1
+%-----------------------------------
+\section{Background}
+Before we introduce our  models, we would like to have a brief discussion on the relevant background. 
+Specifically, in this section, we  review the two classic models that are commonly used for named entity recognition, namely the linear-chain conditional random fields and the semi-Markov conditional random fields models.
+%In this section, we introduce the conventional linear-chain CRF model as well as the Semi-Markov CRF model for named entity recognition task. We first present the general CRF formalism and then extend it to other variants. Then we propose two Semi-Markov CRF model variants to efficiently complete the NER task though there is a very small amount of cases that cannot fit in our models. 
+%Those special cases are fixed by a simple rule which makes the model return to the conventional linear-chain CRF model. 
+
+\subsection{Linear-chain CRFs}
+Conditional random fields, or CRFs~\cite{lafferty2001conditional} is a popular model for structured prediction, which has been widely used in various natural language processing problems, including named entity recognition~\cite{mccallum2003early} and semantic role labeling~\cite{cohn2005semantic}. 
+
+We focus our discussions on the linear-chain CRFs in this section.
+%In this paper, we also defined a discriminative log-linear model over the dynamic programming derivation.
+The probability of predicting a possible output sequence $\vec{y}$ ({\em e.g.}, a named entity label sequence in our case) given an input $\vec{x}$ ({\em e.g.}, a sentence) is defined as:
+\begin{equation}
+p(\vec{y}|\vec{x}) = \frac{\exp(\vec{\vec{w}^{T}\vec{f}(\vec{x},\vec{y}) })}{Z(\vec{x})}
+\end{equation}
+where $\vec{f}(\vec{x},\vec{y})$ is the feature vector defined over $(\vec{x},\vec{y})$ tuple, $\vec{w}$ is the weight vector consisting of parameters used for the model, and $Z(\vec{x})$ is the partition function used for normalization, which is defined as follows:
+%The optimal output structure is $\vec{y}^{*} = \argmax_{\vec{y}}p(\vec{y}|\vec{x})$. 
+%The normalization term $Z(\vec{x})$ represents the score of all the possible structures:
+\begin{equation}
+Z(\vec{x}) = \sum_{\vec{y}}
+\exp
+(\vec{w}^{T}\vec{f}(\vec{x}, \vec{y}))
+\end{equation}
+
+\begin{figure}[h!]
+%	\centering
+	\resizebox{0.8\linewidth}{!}{
+		\begin{subfigure}[b]{\linewidth}
+%			\centering
+			\begin{tikzpicture}[node distance=5mm and 16mm, 
+			>=Stealth, inner sep=0mm,
+			place/.style={circle, draw, thick, fill=black, inner sep=0.5mm}, smalldot/.style={circle,draw, fill=black,scale=0.5}]			
+			\node at (0, 0) [place] (p0){};
+			\node [left = of p0, xshift = 9mm, yshift = 6mm](per1) {\textbf{\textsc{per}}};
+			\node [left = of per1, xshift = 14mm, smalldot](pr1left) {};
+			\node [right = of per1, xshift = -14mm, smalldot](pr1right) {};
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (pr1left) to [out=60,in=120, looseness=0.55] node [above] {} (pr1right);
+			\node [left = of p0, xshift = 7mm, yshift = 0mm](o1) {\textbf{\textsc{o}}};
+			\node [left = of p0, xshift = 10mm, yshift = -6mm](misc1) {\textbf{\textsc{misc}}};
+			\node [left = of misc1, xshift = 15mm, smalldot](misc1left) {};
+			\node [right = of misc1, xshift = -15mm, smalldot](misc1right) {};
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (misc1left) to [out=-60,in=-120, looseness=0.55] node [above] {} (misc1right);
+			\node at (0, 0) [place, right = of p0] (p1){};
+			\node at (0, 0) [place, right = of p1] (p2){};
+			\node at (0, 0) [place, right = of p2] (p3){};
+			\node at (0, 0) [place, right = of p3] (p4){};
+			\node at (0, 0) [place, right = of p4] (p5){};
+			\node at (0, 0) [place, right = of p5] (p6){};
+			\node at (0, 0) [place, right = of p6] (p7){};
+			\node at (0, 0) [place, right = of p7] (p8){};
+			\node at (0, 0) [place, right = of p8] (p9){};
+			
+			%% connect the length = 1 entity. PER
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p0) to [out=60,in=120, looseness=0.55] node [above] {} (p1);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p1) to [out=60,in=120, looseness=0.55] node [above] {} (p2);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p2) to [out=60,in=120, looseness=0.55] node [above] {} (p3);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p3) to [out=60,in=120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p4) to [out=60,in=120, looseness=0.55] node [above] {} (p5);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p5) to [out=60,in=120, looseness=0.55] node [above] {} (p6);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p6) to [out=60,in=120, looseness=0.55] node [above] {} (p7);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p7) to [out=60,in=120, looseness=0.55] node [above] {} (p8);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p8) to [out=60,in=120, looseness=0.55] node [above] {} (p9);
+			
+			%% connect the length = 1 entity. MISC
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p0) to [out=-60,in=-120, looseness=0.55] node [above] {} (p1);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p1) to [out=-60,in=-120, looseness=0.55] node [above] {} (p2);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p2) to [out=-60,in=-120, looseness=0.55] node [above] {} (p3);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p3) to [out=-60,in=-120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p4) to [out=-60,in=-120, looseness=0.55] node [above] {} (p5);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p5) to [out=-60,in=-120, looseness=0.55] node [above] {} (p6);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p6) to [out=-60,in=-120, looseness=0.55] node [above] {} (p7);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p7) to [out=-60,in=-120, looseness=0.55] node [above] {} (p8);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p8) to [out=-60,in=-120, looseness=0.55] node [above] {} (p9);
+			
+			%% connect the length = 1 entity. O type
+			\draw [line width=1pt,-] (p0) to [] node [above] {\small Lee} (p1);
+			\draw [line width=1pt,-] (p1) to [] node [above] {\small Ann} (p2);
+			\draw [line width=1pt,-] (p2) to [] node [above] {\small Womack} (p3);
+			\draw [line width=2pt,->-, blue] (p3) to [] node [above,black] {\small won} (p4);
+			\draw [line width=1pt,-] (p4) to [] node [above,yshift=-0.5mm] {\small Single} (p5);
+			\draw [line width=1pt,-] (p5) to [] node [above] {\small of} (p6);
+			\draw [line width=1pt,-] (p6) to [] node [above] {\small the} (p7);
+			\draw [line width=1pt,-] (p7) to [] node [above] {\small Year} (p8);
+			\draw [line width=2pt,->--, blue] (p8) to [] node [above,black] {\small award} (p9);
+			
+			%% connect the length = 2 entity. per 
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p0) to [out=60,in=120, looseness=0.55] node [above] {} (p2);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p1) to [out=60,in=120, looseness=0.55] node [above] {} (p3);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p2) to [out=60,in=120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p3) to [out=60,in=120, looseness=0.55] node [above] {} (p5);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p4) to [out=60,in=120, looseness=0.55] node [above] {} (p6);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p5) to [out=60,in=120, looseness=0.55] node [above] {} (p7);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p6) to [out=60,in=120, looseness=0.55] node [above] {} (p8);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p7) to [out=60,in=120, looseness=0.55] node [above] {} (p9);
+			
+			%% connect the length = 2 entity. misc
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p0) to [out=-60,in=-120, looseness=0.55] node [above] {} (p2);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p1) to [out=-60,in=-120, looseness=0.55] node [above] {} (p3);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p2) to [out=-60,in=-120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p3) to [out=-60,in=-120, looseness=0.55] node [above] {} (p5);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p4) to [out=-60,in=-120, looseness=0.55] node [above] {} (p6);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p5) to [out=-60,in=-120, looseness=0.55] node [above] {} (p7);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p6) to [out=-60,in=-120, looseness=0.55] node [above] {} (p8);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p7) to [out=-60,in=-120, looseness=0.55] node [above] {} (p9);
+			
+			%% connect the length = 3 entity. per 
+			\draw [line width=2pt, ->-, blue] (p0) to [out=60,in=120, looseness=0.55] node [above] {} (p3);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p1) to [out=60,in=120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p2) to [out=60,in=120, looseness=0.55] node [above] {} (p5);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p3) to [out=60,in=120, looseness=0.55] node [above] {} (p6);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p4) to [out=60,in=120, looseness=0.55] node [above] {} (p7);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p5) to [out=60,in=120, looseness=0.55] node [above] {} (p8);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p6) to [out=60,in=120, looseness=0.55] node [above] {} (p9);
+			
+			%% connect the length = 3 entity. misc
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p0) to [out=-60,in=-120, looseness=0.55] node [above] {} (p3);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p1) to [out=-60,in=-120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p2) to [out=-60,in=-120, looseness=0.55] node [above] {} (p5);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p3) to [out=-60,in=-120, looseness=0.55] node [above] {} (p6);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p4) to [out=-60,in=-120, looseness=0.55] node [above] {} (p7);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p5) to [out=-60,in=-120, looseness=0.55] node [above] {} (p8);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p6) to [out=-60,in=-120, looseness=0.55] node [above] {} (p9);
+			
+			%% connect the length = 4 entity. per 
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p0) to [out=60,in=120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p1) to [out=60,in=120, looseness=0.55] node [above] {} (p5);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p2) to [out=60,in=120, looseness=0.55] node [above] {} (p6);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p3) to [out=60,in=120, looseness=0.55] node [above] {} (p7);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p4) to [out=60,in=120, looseness=0.55] node [above] {} (p8);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p5) to [out=60,in=120, looseness=0.55] node [above] {} (p9);
+			
+			%% connect the length = 4 entity. misc
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p0) to [out=-60,in=-120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p1) to [out=-60,in=-120, looseness=0.55] node [above] {} (p5);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p2) to [out=-60,in=-120, looseness=0.55] node [above] {} (p6);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p3) to [out=-60,in=-120, looseness=0.55] node [above] {} (p7);
+			\draw [line width=2pt, ->-, blue] (p4) to [out=-60,in=-120, looseness=0.55] node [above] {} (p8);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p5) to [out=-60,in=-120, looseness=0.55] node [above] {} (p9);
+			\end{tikzpicture}
+		\end{subfigure} 
+	}
+		\resizebox{0.8\linewidth}{!}{
+		\begin{subfigure}[b]{\linewidth}
+			\centering
+			
+			\begin{tikzpicture}[node distance=5mm and 16mm, >=Stealth, inner sep=0mm,
+			place/.style={circle, draw, thick, fill=black, inner sep=0.5mm}, smalldot/.style={circle,draw, fill=black,scale=0.5}]
+			
+			\node at (0, 0) [place] (p0){};
+			\node [left = of p0, xshift = 9mm, yshift = 6mm](per1) {\textbf{\textsc{per}}};
+			\node [left = of per1, xshift = 14mm, smalldot](pr1left) {};
+			\node [right = of per1, xshift = -14mm, smalldot](pr1right) {};
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (pr1left) to [out=60,in=120, looseness=0.55] node [above] {} (pr1right);
+			\node [left = of p0, xshift = 7mm, yshift = 0mm](o1) {\textbf{\textsc{o}}};
+			\node [left = of p0, xshift = 10mm, yshift = -6mm](misc1) {\textbf{\textsc{misc}}};
+			\node [left = of misc1, xshift = 15mm, smalldot](misc1left) {};
+			\node [right = of misc1, xshift = -15mm, smalldot](misc1right) {};
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (misc1left) to [out=-60,in=-120, looseness=0.55] node [above] {} (misc1right);
+			\node at (0, 0) [place, right = of p0] (p1){};
+			\node at (0, 0) [place, right = of p1] (p2){};
+			\node at (0, 0) [place, right = of p2] (p3){};
+			\node at (0, 0) [place, right = of p3] (p4){};
+			\node at (0, 0) [place, right = of p4] (p5){};
+			\node at (0, 0) [place, right = of p5] (p6){};
+			\node at (0, 0) [place, right = of p6] (p7){};
+			\node at (0, 0) [place, right = of p7] (p8){};
+			\node at (0, 0) [place, right = of p8] (p9){};
+			
+			%% connect the length = 1 entity. PER
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p0) to [out=60,in=120, looseness=0.55] node [above] {} (p1);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p1) to [out=60,in=120, looseness=0.55] node [above] {} (p2);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p2) to [out=60,in=120, looseness=0.55] node [above] {} (p3);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p3) to [out=60,in=120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p4) to [out=60,in=120, looseness=0.55] node [above] {} (p5);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p5) to [out=60,in=120, looseness=0.55] node [above] {} (p6);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p6) to [out=60,in=120, looseness=0.55] node [above] {} (p7);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p7) to [out=60,in=120, looseness=0.55] node [above] {} (p8);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p8) to [out=60,in=120, looseness=0.55] node [above] {} (p9);
+			
+			%% connect the length = 1 entity. MISC
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p0) to [out=-60,in=-120, looseness=0.55] node [above] {} (p1);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p1) to [out=-60,in=-120, looseness=0.55] node [above] {} (p2);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p2) to [out=-60,in=-120, looseness=0.55] node [above] {} (p3);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p3) to [out=-60,in=-120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p4) to [out=-60,in=-120, looseness=0.55] node [above] {} (p5);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p5) to [out=-60,in=-120, looseness=0.55] node [above] {} (p6);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p6) to [out=-60,in=-120, looseness=0.55] node [above] {} (p7);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p7) to [out=-60,in=-120, looseness=0.55] node [above] {} (p8);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p8) to [out=-60,in=-120, looseness=0.55] node [above] {} (p9);
+			
+			%% connect the length = 1 entity. O type
+			\draw [line width=1pt,-] (p0) to [] node [above] {\small Lee} (p1);
+			\draw [line width=1pt,-] (p1) to [] node [above] {\small Ann} (p2);
+			\draw [line width=1pt,-] (p2) to [] node [above] {\small Womack} (p3);
+			\draw [line width=2pt,->-,blue] (p3) to [] node [above,black] {\small won} (p4);
+			\draw [line width=1pt,-] (p4) to [] node [above, yshift=-0.5mm] {\small Single} (p5);
+			\draw [line width=1pt,-] (p5) to [] node [above] {\small of} (p6);
+			\draw [line width=1pt,-] (p6) to [] node [above] {\small the} (p7);
+			\draw [line width=1pt,-] (p7) to [] node [above] {\small Year} (p8);
+			\draw [line width=2pt,->--, blue] (p8) to [] node [above,black] {\small award} (p9);
+			
+			%% connect the length = 2 entity. per 
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p1) to [out=60,in=120, looseness=0.55] node [above] {} (p3);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p2) to [out=60,in=120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p4) to [out=60,in=120, looseness=0.55] node [above] {} (p6);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p6) to [out=60,in=120, looseness=0.55] node [above] {} (p8);
+			
+			%% connect the length = 2 entity. misc
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p1) to [out=-60,in=-120, looseness=0.55] node [above] {} (p3);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p2) to [out=-60,in=-120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p4) to [out=-60,in=-120, looseness=0.55] node [above] {} (p6);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p6) to [out=-60,in=-120, looseness=0.55] node [above] {} (p8);
+			
+			
+			%% connect the length = 3 entity. per 
+			\draw [line width=2pt, ->-,blue] (p0) to [out=60,in=120, looseness=0.55] node [above] {} (p3);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p1) to [out=60,in=120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p5) to [out=60,in=120, looseness=0.55] node [above] {} (p8);
+			
+			
+			%% connect the length = 3 entity. misc
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p0) to [out=-60,in=-120, looseness=0.55] node [above] {} (p3);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p1) to [out=-60,in=-120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p5) to [out=-60,in=-120, looseness=0.55] node [above] {} (p8);
+			
+			
+			%% connect the length = 4 entity. per 
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p0) to [out=60,in=120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,orange] (p4) to [out=60,in=120, looseness=0.55] node [above] {} (p8);
+			
+			%% connect the length = 4 entity. misc
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},-,purple] (p0) to [out=-60,in=-120, looseness=0.55] node [above] {} (p4);
+			\draw [line width=2pt,->-, blue] (p4) to [out=-60,in=-120, looseness=0.55] node [above] {} (p8);
+			
+			\end{tikzpicture}
+		\end{subfigure}
+	}
+	\resizebox{0.8\linewidth}{!}{
+		\begin{subfigure}[b]{\linewidth}
+			\centering
+			
+			\begin{tikzpicture}[node distance=3mm and 16mm, 
+			>=Stealth, inner sep=0.5mm,
+			place/.style={circle, draw, thick, fill=black}]
+			\node at (0mm, -25mm) [xshift = 0mm, yshift = 8mm](per1) {};
+			\node at (24mm, -25mm) [label=below:\small \textsc{b-per},  yshift = -0.05mm] (p0w) {Lee};
+			%				\node [left = of p0w, xshift = mm, yshift = 8mm](per1) {sdfsdf};
+			\node at (42mm, -25mm) [label=below:\small \textsc{i-per},  yshift = -0.05mm] (p1w) {Ann};
+			\node at (60mm, -25mm) [label=below:\small \textsc{i-per}] (p2w) {Womack};
+			\node at (78mm, -25.6mm) [label=below:\small \textsc{o},  yshift = 0.15mm] (p3w) {won};
+			\node at (96mm, -24.9mm) [label=below:\small \textsc{b-misc},  yshift = 0.2mm] (p4w) {Single};
+			\node at (114mm, -25mm) [label=below:\small \textsc{i-misc}] (p5w) {of};
+			\node at (132mm, -25mm) [label=below:\small \textsc{i-misc}] (p6w) {the};
+			\node at (150mm, -25mm) [label=below:\small \textsc{i-misc},  yshift = -0.05mm] (p7w) {Year};
+			\node at (166mm, -25mm) [label=below:\small \textsc{o}] (p8w) {award};
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p2w) to [out=110,in=60, looseness=0.8] node [above] {} (p0w);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p2w) to [out=120,in=50, looseness=0.7] node [above] {} (p1w);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p3w) to [out=120,in=50, looseness=0.7] node [above] {} (p2w);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p3w) to [out=60,in=115, looseness=0.65] node [above] {} (p8w);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p4w) to [out=50,in=130, looseness=0.7] node [above] {} (p5w);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p5w) to [out=60,in=120, looseness=0.8] node [above] {} (p7w);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p7w) to [out=150,in=40, looseness=1] node [above] {} (p6w);
+			\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p8w) to [out=130,in=60, looseness=0.6] node [above] {} (p4w);
+			\end{tikzpicture}
+			
+		\end{subfigure}
+		
+		
+	}
+	\caption{Illustrations of possible combinations of entities for the conventional semi-CRFs model (top) and our \textsc{dgm} model (middle), as well as the example sentence with its dependency structure (bottom).}
+	\label{fig:graphexample}
+\end{figure}
+
+
+
+In a (first-order) linear-chain CRF, the partition function for a input of length $n$ can also be written as follows:
+\begin{equation}
+Z(\mathbf{x}) = \sum_{\mathbf{y}}\exp\smashoperator{\sum_{(y',y,i)\in\mathcal{E}(\mathbf{x}, \mathbf{y})}}\ \mathbf{w}^T\mathbf{f}(\vec{x}, y',y,i)
+\end{equation}
+where $\mathcal{E}(\vec{x}, \vec{y})$ is the set of edges which defines the input $\vec{x}$ labeled with the label sequence $\vec{y}$ and $\vec{f}(\vec{x},y', y,i)$ is a local feature vector defined at the $i$-th position of the input sequence.
+$T$ is the set of all output labels.
+The above function can be computed efficiently using dynamic programming.
+It can be seen that the time complexity of a linear-chain CRFs model is $\mathcal{O}(n|T|^{2})$.
+
+We aim to minimize the negative joint log-likelihood with $\textit{L}_{2}$ regularization for our dataset:
+%, leading to the following objective function:
+\begin{equation}
+\begin{split}
+\mathcal{L}(\vec{w}) =  \sum_{i}\log\sum_{\substack{\vec{y}{'} } }\exp(\vec{w}^{T}\vec{f}(\vec{x}_{i},\vec{y}{'}))  - \sum_{i}\vec{w}^{T}\vec{f}(\vec{x}_{i},\vec{y}_{i}) + \lambda \vec{w}^{T}\vec{w}
+\end{split}
+\end{equation} 
+where $(\vec{x}_{i},\vec{y}_{i})$ is the $i$-th training instance and $\lambda$ is the $L_{2}$ regularization coefficient.
+
+%The convexity and differentiability of objective function guarantees convergence to the global optimum, and using inside-outside algorithm can efficiently compute the above gradient. There are numbers of techniques can be used for optimizing objective function. 
+The objective function is convex and we can make use of the L-BFGS \cite{byrd1995limited} algorithm to optimize it.
+The partial derivative of $\mathcal{L}$ with respect to each parameter $w_{k}$ is:
+\begin{equation}
+%\begin{split}
+\frac{\partial\mathcal{L}}{\partial w_{k}}  = \sum_i\Big(\mathbf{E}_{p(\vec{y}{'}|\vec{x}_{i})} \left [f_{k}(\vec{x}_{i}, \vec{y}{'})    \right ] -  f_{k}(\vec{x}_{i}, \vec{y}_{i})\Big) + 2\lambda w_{k}\nonumber
+%\end{split}
+\end{equation}
+
+
+
+\subsection{Semi-Markov CRFs}
+The semi-Markov conditional random fields, or semi-CRFs~\cite{sarawagi2004semi} is an extension of the standard linear-chain CRFs.
+Different from linear-chain CRFs, which makes use of simple first-order Markovian assumptions, the semi-CRFs
+assumes that the transitions between words inside a span ({\em e.g.}, an entity consisting of multiple words) can be non-Markovian.
+Such an assumption allows more flexible non-Markovian features to be defined.
+The resulting model was shown to be more effective than its linear-chain counterpart in information extraction tasks.
+%~\cite{sarawagi2004semi}.
+
+%was first introduced by  in information extraction. 
+
+The partition function in this setting becomes:
+%\begin{equation}
+%Z(\vec{x}) = \sum_{i=1}^{n} \sum_{l=1}^{L}  \sum_{y'\in T}\sum_{y\in T}\exp(\vec{w}^{T}\vec{f}(\vec{x}, y', y, {i-l}, {i}) )
+%\end{equation}
+\begin{equation}
+Z(\vec{x}) = 
+\sum_\vec{y}
+\exp \!\!\!\!\! \!\!\!\!\!
+\sum_{(y^\prime, y, i-l,i) \in \mathcal{E}(\vec{x}, \vec{y})}
+\!\!\!\! \!\!\!\!\!
+\vec{w}^{T}\vec{f}(\vec{x}, y^\prime, y, i-l,i)
+\end{equation}
+where $\vec{f}(\vec{x},y', y, i-l, i)$ represents the local feature vector at position $i$ with a span of size $l$. In this case, the time complexity becomes $\mathcal{O} (nL|T|^{2})$.
+The value $L$ is the maximal length of the spans the model can handle.
+% depends on the longest entity in training data and the maximum value is the sentence length. 
+
+Consider the sentence ``{\em Lee Ann Womack won Single of the Year award}''.
+The upper portion of Figure \ref{fig:graphexample} shows all the possible structures that are considered by the partition function with $L=4$.
+These structures essentially form a compact lattice representation showing all the possible combinations of entities (with length restriction)
+that can ever appear in the given sentence.
+Each orange and red edge is used to represent an entity of type \textsc{per} and \textsc{misc} respectively.
+The black lines are used to indicate words that are not part of any entity.
+The directed path highlighted in bold blue  corresponds to the correct  entity information associated with the phrase, where ``{\em Lee Ann Womack}'' is an entity of type \textsc{per}, and ``{\em Single of the Year}'' is another entity of  type \textsc{misc} ({\em miscellaneous}).
+
+
+
+\section{Our Model}
+
+%We now introduce our model in this section.
+The primary assumption we would like to make  is that the dependency trees of sentences are available when performing the  named entity recognition task.
+%Such dependency trees can be outputs from some existing dependency parsers.
+
+%We first briefly discuss how to make use of dependency information as features in the NER process, and then discuss how to make use of global structured information of the dependency trees for improved NER.
+
+\subsection{NER with Dependency Features}
+
+One  approach to exploit information from dependency structures is to design local features based on such dependency structures and make use of conventional models such as semi-CRFs for performing NER.
+Previous research efforts have shown that such features extracted from dependency structures can be helpful when performing the entity recognition task~\cite{sasano2008japanese,ling2012fine,cucchiarelli2001unsupervised}.
+
+In Figure~\ref{fig:graphexample}, we have already used a graphical illustration to show the possible combinations of entities that can ever appear in the given sentence.
+Each edge in the figure corresponds to one entity (or a single word that is outside of any entity -- labeled with \textsc{o}).
+%
+%
+%
+%
+%the semi-CRFs model for the sentence ``{\em Lee Ann Womack was awarded Single of the Year}''.
+%We use different types of nodes to indicate possible semantic classes, and edges are used to indicate boundaries of entities.
+%For example, the edge connecting two \textsc{per} nodes indicates an entity  of type \textsc{per} spanning a consecutive sequence of words with boundaries specified by the two end nodes.
+%For an edge connecting two different types of nodes, these nodes indicate the left and right boundaries of two entities of different types respectively.
+%For example, the edge connecting one \textsc{per} node and one \textsc{misc} node indicates the right boundary of an entity of type \textsc{per} and the left boundary of an entity of type \textsc{misc}.
+Features can be defined over such edges, where each feature is assigned a weight.
+Such features, together with their weights, can be used to score each possible path in the figure.
+%edges connecting different nodes.
+When dependency trees are provided, one can define features involving some local dependency structures.
+For example, for the word ``{\em Womack}'', one possible feature that can be defined over edges covering this word can be of the form ``{\em Womack }$\leftarrow${\em won}'', indicating there is an incoming arc from the word ``{\em won}'' to the current word ``{\em Womack}''.
+However, we note that such features largely ignore the global structured information as presented by the dependency trees.
+Specifically, certain useful facts such as the word ``{\em Lee}'' is a child of the word ``{\em Womack}'' and at the same time a grandchild of the word ``{\em won}'' is not captured due to such a simple treatment of dependency structures.
+
+\subsection{Dependency-Guided NER}
+
+%In the upper part of Figure~\ref{fig:graphexample}, \dots
+
+The main question we would like to ask is: how should we make good use of the structured information associated with the dependency trees to perform named entity recognition?
+Since we are essentially interested in NER only, would there be some more global structured information in the dependency trees that can be used to guide the NER process?
+
+From the earlier two examples shown in  Figure \ref{fig:dgmexample} as well as the example shown in Figure \ref{fig:graphexample} we can observe that the named entities tend to be covered by a single or multiple adjacent dependency arcs.
+This is not a surprising finding as for most named entities which convey certain semantically meaningful information, 
+it is expected that there exist certain internal structures -- {\em i.e.}, dependencies amongst different words within the entities.
+Words inside each named entity typically do not have dependencies with words outside the entities, except for certain words such as head words which typically have incoming arcs from outside words.
+
+This finding motivates us to exploit such global structured information as presented by dependency trees for performing  NER.
+Following the above observation, we first introduce the following notion:
+\begin{definition}[Definition 1]
+	\label{def:1}
+	A {\em valid span} either consists of a single word, or is a word sequence that is covered by a  chain of (undirected) arcs where no arc is covered by another.
+\end{definition}
+
+For example, in Figure \ref{fig:graphexample}, the word sequence ``{\em Lee Ann Womack}'' is a valid span since there exists a single arc from ``{\em Womack}'' to ``{\em Lee}''. The sequence ``{\em Ann Womack won}'' is also a valid span due to a chain of undirected arcs -- one between ``{\em Ann}'' and ``{\em Womack}'' and the other between ``{\em Womack}'' and ``{\em won}''.
+Similarly, the single word ``{\em Womack}'' is also a valid span given the above definition.
+
+Based on the above definition, we can build a novel dependency-guided NER model based on the conventional semi-CRFs  by restricting the space of all possible combinations of entities to those that strictly contain only valid spans.
+This leads to the following new partition function:
+\begin{equation}
+Z(\vec{x}) = \!\!\!\!\!\!\sum_{(i,j)\in\mathcal{S}_L(\vec{x})}\sum_{y'\in T} \sum_{y\in T}\exp(\vec{w}^{T}\vec{f}(\vec{x}, y', y, {i}, {j}) )
+\end{equation}
+where $\mathcal{S}(\mathbf{x})$ refers to the set of valid spans for a given input sentence $\mathbf{x}$, and $\mathcal{S}_L(\mathbf{x})$ refers to its subset that contains only those valid spans whose lengths are no longer than $L$.
+
+We call the resulting model {\em dependency-guided model} (\textsc{dgm}).
+Figure \ref{fig:graphexample} (middle) presents the graphical illustration of all possible paths (combination of entities) with $L=4$ that our model considers.
+For example, since the word sequence ``{\em Ann Womack won Single}'' is not a valid span, the corresponding edges covering this word sequence is removed from the original lattice representation in Figure \ref{fig:graphexample} (top).
+The edge covering the word sequence ``{\em of the Year}'' remains there as it is covered by the arc from ``{\em of}'' to ``{\em Year}'', thus a valid span.
+As we can see, the amount of paths that we consider in the new model is substantially reduced.
+
+\subsection{Time Complexity}
+We can also analyze the time complexity required for this new model. We show example best-case and worst-case scenarios in Figure~\ref{fig:scenarios_analysis}.
+For the former case there are $\mathcal{O} (n)$ valid spans. Thus the time complexity in the best case is $\mathcal{O} (n|T|^2)$, the same as the linear-chain CRFs model.
+For the latter, there are $\mathcal{O} (nL)$ valid spans, leading to the time complexity $\mathcal{O} (nL|T|^2)$ in the worst case, the same as the semi-Markov CRFs model.
+%This analysis shows the potential of our model -- empirically it can run faster than the conventional semi-Markov CRFs model.
+%We will confirm this later through empirical analysis.
+
+\begin{figure}[t!]
+%	\small
+	%	\centering
+	\begin{subfigure}[t]{0.51\linewidth}
+		\centering
+		\begin{tikzpicture}[node distance=3mm and 7mm, >=Stealth]
+		\node[place,line width=1pt, minimum size=0.2cm] (p1) {};
+		\node[place,line width=1pt, right=of p1, minimum size=0.2cm] (p2) {};
+		\node[place,line width=1pt, right=of p2, minimum size=0.2cm] (p3) {};
+		\node[place,line width=1pt, right=of p3, minimum size=0.2cm] (p4) {};
+		\node[place,line width=1pt, right=of p4, minimum size=0.2cm] (p5) {};
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p5) to [out=120,in=50, looseness=0.7] node [above] {} (p1);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p5) to [out=120,in=60, looseness=0.7] node [above] {} (p2);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p5) to [out=120,in=60, looseness=0.7] node [above] {} (p3);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p5) to [out=120,in=60, looseness=1.1] node [above] {} (p4);
+		\end{tikzpicture}
+		\caption{Best-case Scenario}
+		\label{fig:bestcase} 
+	\end{subfigure}
+	\begin{subfigure}[t]{0.48\linewidth}
+		\centering
+		\begin{tikzpicture}[node distance=3mm and 7mm, >=Stealth]
+		\node[place,line width=1pt, minimum size=0.2cm] (p1) {};
+		\node[place,line width=1pt, right=of p1, minimum size=0.2cm] (p2) {};
+		\node[place,line width=1pt, right=of p2, minimum size=0.2cm] (p3) {};
+		\node[place,line width=1pt, right=of p3, minimum size=0.2cm] (p4) {};
+		\node[place,line width=1pt, right=of p4, minimum size=0.2cm] (p5) {};
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p5) to [out=120,in=50, looseness=1] node [above] {} (p4);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p4) to [out=120,in=50, looseness=1] node [above] {} (p3);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p3) to [out=120,in=50, looseness=1] node [above] {} (p2);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (p2) to [out=120,in=50, looseness=1] node [above] {} (p1);
+		\end{tikzpicture}
+		\caption{Worst-case Scenario}
+		\label{fig:worstcase} 
+	\end{subfigure}
+	\caption{The best-case and worst-case scenarios of  \textsc{dgm}.}
+	\label{fig:scenarios_analysis}
+\end{figure}
+
+Furthermore, we have the following theorem for the average-case time complexity:
+\begin{theorem}
+	The average-case time complexity of \textsc{dgm} is $\mathcal{O}(n|T|^2)$.
+\end{theorem}
+\begin{proof}
+	
+	We refer the readers to our full paper~\cite{jie2017efficient} with appendix\footnote{https://arxiv.org/pdf/1810.08436.pdf}.
+	We credit Aldrian with his substantial effort for the complexity derivation.
+\end{proof}
+
+%(We provide a detailed proof in the following section \ref{sec:numedges})
+%We provide the detailed proof in our full paper~\cite{jie2017efficient} with appendix\footnote{https://arxiv.org/pdf/1810.08436.pdf}.
+
+Now, this is a remarkable result, showing that the  complexity of our \textsc{dgm} model in its average case is still linear in the sentence length $n$ even if we set $L$ to its maximal value $n$. This is also true empirically, which we show in the supplementary material (S.3.2).
+% is independent of $L$ ({\em i.e.}, one can set the value of $L$ to up to $n$).
+So, while our model retains the ability to capture non-Markovian features like semi-Markov CRFs,
+it is more scalable and can be used to extract longer entities.
+
+%\begin{theorem}
+%	For the inference algorithm of \textsc{dgm}, its best-case time complexity  is in $\mathcal{O}(n|T|)$, and the worst-case is in $\mathcal{O}(nL|T|^2)$.
+%\end{theorem}
+%
+%\begin{proof}[Proof Sketch]
+%	The best-case and worst-case scenarios are illustrated in Figure \ref{fig:scenarios_analysis}.
+%	We can see that for the best-case scenario, for each entity type there are $(n-1)$ possible spans.
+%\end{proof}
+
+%In the conventional Semi-Markov Model setting, the normalization term becomes:
+%\begin{equation}
+%Z(\vec{x}) = \sum_{i=1}^{n} \sum_{y_{i}\in T}\sum_{l=1}^{L} \sum_{y_{i-l}\in T}\exp(\vec{w}^{T}\vec{f}(\vec{x},y_{i-l}, y_{i}) )
+%\end{equation}
+%where $\vec{f}(\vec{x},y_{i-l}, y_{i})$ represents the feature vector on the edges that connecting label $y_{i}$ and label $y_{i-k}$. In this case, the time complexity should be $\mathcal{O} (nL|T|^{2})$. The $L$ depends on the longest entity in training data and the maximum value is the sentence length. 
+
+%\subsection{Dependency-based Segment Model (DSM)}
+%In our first model, we consider to remove most of the edges while building the model based on the relationship between the dependency and named entity. 
+%
+%Take Figure \ref{fig:graphexample} as an example, some of the edges can be removed if we already have the dependency information. 
+%In this case, we still have the full connections at all adjacent positions. Thus, the complexity of Linear-chain CRF is still there.
+%Then the segment connections between non-adjacent positions depend on the number of dependencies. Under a dependency arc, we also have the fully connections between all the labels at non-adjacent positions except for the $O$ label since the $O$ label is always considered as a segment with length 1 \cite{sarawagi2004semi}. That means we have $\mathcal{O}(|T|^{2})$ connections for each dependency and there are in $\mathcal{O}(n)$ dependencies in total. The normalization term becomes:
+%\begin{align}
+%\begin{split}
+%Z(\vec{x}) &  = \sum_{i=1}^{n} \sum_{y_{i-1}\in T} \sum_{y_{i}\in T}\exp(\vec{w}^{T}\vec{f}(\vec{x},y_{i-1}, y_{i}) )\\
+%& + \sum_{i=1}^{n} \sum_{y_{i}\in T}\sum_{y_{ih}\in T}\exp(\vec{w}^{T}\vec{f}(\vec{x},y_{ih}, y_{i}) )
+%\end{split}
+%\end{align}
+%where $y_{i\_dep}$ represents the head label of the current position $i$. The time complexity is still $\mathcal{O} (n|T|^{2})$. As in the first observation, there are about 94\% of entities can be handled this model. 
+
+%\subsection{Extra-Dependency-based Segment Model (EDSM)}
+%Model 1 can deal with about 96\% of all the entities, but there are rooms to improve the model. So based on the second observation, we build another Semi-Markov model that can handle more than 99\% of all the entities that in the form of figure \ref{fig:twoexample}.  
+%
+%Specifically, take figure \ref{fig:model2example} as an example, there are no dependency arc cover the whole entity \textsc{Telerate} \textsc{Systems} \textit{Inc} now. Now we look at a window within the entity only, all the dependencies outside this window are removed. Thus, the structure becomes something like:
+%\begin{figure}[h]
+%	\centering
+%	\begin{tikzpicture}[node distance=3.5mm and 3.5mm, >=Stealth]
+%	\node [](c_node) [] {Voice};
+%	\node [](d_node) [ right=of c_node] {of};
+%	\node [](e_node) [right=of d_node] {America};
+%	
+%	\node [](ct_node) [label=below:\small \textsc{b-org},below=of c_node,yshift=5mm] {\scriptsize NNP};
+%	\node [](dt_node) [label=below:\small \textsc{i-org},below=of d_node,yshift=5mm]{\scriptsize NNP};
+%	\node [](et_node) [label=below:\small \textsc{i-org},below=of e_node,yshift=5mm]{\scriptsize NNP};
+%	
+%	\draw [line width=1pt, -{Stealth[length=3.5mm, open]}, ->] (c_node) to [out=60,in=120, looseness=1] node [above] {} (d_node);
+%	\draw [line width=1pt, -{Stealth[length=3.5mm, open]}, ->] (d_node) to [out=60,in=120, looseness=1] node [above] {} (e_node);
+%	\end{tikzpicture}
+%	\caption{The representation after we crop a ``window'' from sentence}
+%	\label{fig:model2example}
+%\end{figure}
+
+
+%We further make the dependencies in this window become undirected links. It's obvious to see that all these links make the entity connected. Inspired by this observation, we can build another somewhat complex model to handle these cases. The idea in our graphical representation is to connect the partial entity given the previous connection and then the whole entity will become a segment after this process. To make it clear, figure \ref{fig:threestep} shows the process of building such model. 
+
+%As the previous model, the complexity of the linear-chain CRF still exist in our model 2. The normalization term in this case becomes:
+%\begin{align*}
+%\begin{split}
+%Z(\vec{x}) &  = \sum_{i=1}^{n} \sum_{y_{i-1}\in T} \sum_{y_{i}\in T}\exp(\vec{w}^{T}\vec{f}(\vec{x},y_{i-1}, y_{i}) )\\
+%& + \sum_{i=1}^{n} \sum_{y_{i}\in T}\sum_{\substack{y_{ih}\in T \\ y_{i}\neq y_{ih}}}\exp(\vec{w}^{T}\vec{f}(\vec{x},y_{ih}, y_{i}) ) \\
+%& + \sum_{i=1}^{n} \sum_{y_{i}\in T}\sum_{\substack{\text{child}(y_{ih}) \\  y_{ih}=y_{i}} }\exp(\vec{w}^{T}\vec{f}(\vec{x},\text{child}(y_{ih}), y_{i}) ) \\
+%\end{split}
+%\end{align*}
+%
+%Overall, the complexity in our model 2 depends on the number of children that a node has. The complexity can be equal to original Semi-Markov CRF model. But in practice, the decoding time is faster than the original Semi-Markov CRF model. 
+%%%Make a proof to prove that it's still more efficient then orignial semimarkov
+%Thus, using our model 2 still has a lower complexity than the original semi-Markov CRF model. Though many edges are removed in our model, the dependency information is essentially implicitly embedded in the Semi-Markov model. 
+%
+
+
+%\begin{figure*}[h]
+%	\centering
+%	\subfigure[First Step]{\label{fig:dfdf} 
+%		\includegraphics[width=1.8in]{imgs/firststep.pdf}
+%	} \hfill
+%	\subfigure[Second Step]{\label{fig:dfdf} 
+%		\includegraphics[width=1.8in]{imgs/secondstep.pdf}
+%	} \hfill
+%	\subfigure[Third Step]{\label{fig:dfdf} 
+%		\includegraphics[width=1.8in]{imgs/thirdstep.pdf}
+%	}
+%	\caption{The three-step graphical model construction based on the example in figure \ref{fig:model2example}. (a) When we construct the connections of \textsc{org} in the middle position, all the nodes in previous position are connected based on the dependency from \textit{Systems} to \textit{Telerate}. (b) when we see the second dependency from \textit{Systems} to \textit{Inc}, we also connect all the nodes in previous positions except the link between \textsc{org} and \textsc{org}. (c) Thus when we see the nodes with same types, we connect to all its children instead of the previous node.}
+%	\label{fig:threestep}
+%\end{figure*}
+
+%\subsection{Special Cases}
+%There are some other special cases (about 0.06\%) that still cannot even be handled by EDSM since they are not really ``connected'' by the definition in EDSM. For example in figure \ref{fig:specialcase}, the \textsc{misc} entity , \textit{Hasidic Jewish}, has a head from \textit{family}. Thus, if we look at the entity window and remove all the dependencies from this window, all the two words in this entity are isolated. Since the portion of this kind of structure is very small, we use the linear-chain structure to connect this two words when we encounter this case during training. 
+% 
+%\begin{figure}[h]
+%	\centering
+%	\begin{tikzpicture}[node distance=2.9mm and 2.9mm, >=Stealth]
+%		\node [](a_node) [] {Hasidic};
+%		\node [](b_node) [right=of a_node] {Jewish} ;
+%		\node [](c_node) [right=of b_node] {family};
+%		
+%		\node [](at_node) [label=below:\small \textsc{b-misc},below=of a_node,yshift=4mm]{\scriptsize JJ};
+%		\node [](bt_node) [label=below:\small \textsc{i-misc} ,below=of b_node,yshift=4mm]{\scriptsize JJ};
+%		\node [](ct_node) [label=below:\small \textsc{o},below=of c_node,yshift=4mm] 	{\scriptsize NN};
+%
+%		
+%		\draw [line width=1pt, -{Stealth[length=3.5mm, open]}, <-] (a_node) to [out=60,in=110, looseness=1] node [above] {} (c_node);
+%		\draw [line width=1pt, -{Stealth[length=3.5mm, open]}, <-] (b_node) to [out=60,in=130, looseness=1] node [above] {} (c_node);
+%		
+%	\end{tikzpicture}
+%	\caption{Special case: the entity that is not ``connected'' by the dependencies}
+%	\label{fig:specialcase}
+%\end{figure}
+
+
+%\subsection{Model Refinement}
+%Though there is a strong relationship between dependency and the named entity, some other dependencies are still not useful for the model. For the short dependency, we might not sure whether it is covering an entity or not. Thus, we then turn to focus on eliminating some long dependencies. We can limit the maximum length of the entity and ignore those dependencies whose length is larger than this maximum length value.
+%% Connect to the same type or not?
+%%remove the edges.{}
+
+Besides the standard \textsc{dgm} model defined above, we also consider a variant, where we restrict the  chain (of arcs) to be of length 1 ({\em i.e.}, single arc) only. We call the resulting model \textsc{dgm-s}, where \textsc{s} stands for {\em single arc}.
+Such a simplified model will lead to an even simpler lattice representation, resulting in even less running time.
+However it may also lead to  lower performance as such a  variant might not be able to capture certain named entities.
+In one of the later sections, we will conduct experiments on such a model and compare its performance with other models.
+
+\subsection{Number of Edges}
+\label{sec:numedges}
+The number of edges in a graphical model is proportional to the time complexity of training the model, and so in the interest of calculating the time complexity of the models, in this section we show theoretically that on average case, the number of edges in our \textsc{dgm} model is linear in terms of $n$, the number of words in a sentence. Then for all models we show empirically the relationship between the number of edges and the sentence length $n$.
+
+%\subsubsection{Theoretical Analysis}
+%In this section we show how to calculate the average number of edges in the \textsc{dgm} model for a sentence of length $n$. Note that the number of edges in the model is by definition equal to the number of valid spans, as an edge is added in the model connecting the beginning of the first word and the end of the last word of each valid span. In the first analysis, we will count the valid spans that cover more than one words separately from the valid spans covering only one word. Since the valid spans covering one word are always present, the count is known, there are $n$ of them for each graph in the model. So in the first method we count only the valid spans covering more than one words.
+%
+%We first calculate the total number of edges in the \textsc{dgm} model over all possible undirected trees, then the average is just this number divided by the number of undirected trees. 
+%Although dependency trees are directed trees, calculating the average on undirected trees is sufficient as for each undirected tree there is exactly $n$ possible dependency trees, one for each selection of node as the root of the tree, and so the average number of edges will be the same. Note that we consider both projective and non-projective trees here. Later the empirical count will provide an evidence that the average number of edges calculated here still holds even in a dataset where most of the trees are projective.
+%
+%More formally, if the vertex set for the graph $G_{\tau}$ in the \textsc{dgm} model with the undirected dependency tree $\tau$ is $V(G_{\tau}) = \{1,2,\ldots,n\}$ and the edge set of the tree is $E(\tau)$, then the edge set of the graph in the model is $E_{\textsc{dgm}}(G_{\tau}) = \{(u_1,u_{k+1})\ |\ \exists\ u_1<u_2<\ldots<u_{k+1}\ \text{s.t.}\ (u_i,u_{i+1})\in E(\tau),\ \forall i=1,2,\ldots,k,\ k\geq 1\}$. We present two alternative methods to count the average, the first using algebra, and the second using bijection. Although the first method is more complicated, along the process it also calculates the relationship between the average number of edges and $L$, the maximum valid span length. In this supplementary material, we present only the first method. The proof by bijection is already covered in the main paper~\cite{jie2017efficient}.
+%
+%\subsubsection{Proof by Algebra}
+%
+%To count the number of edges over all possible trees, we consider each pair of nodes $u$ and $v$ in the graph, where $u<v$. Let $f_n(u,v)$ be the number of times there is an edge in the \textsc{dgm} model, over all possible trees. More formally, the number of times $f_n(u,v)$ can be computed as $f_n(u,v) = \sum_{\tau\in\mathcal{T}(n)} I\left[(u,v)\in E_{\textsc{dgm}}(G_{\tau})\right]$, where $I[F]$ is the indicator function, which is $1$ if the expression $F$ is true, $0$ otherwise, and $\mathcal{T}(n)$ is the set of all possible trees with $n$ nodes. Also, let $F(n, L)$ as the total number of edges in \textsc{dgm} model where the maximum valid span length is $L$. We are looking for $\bar{F}(n,n)$, the average number of edges in \textsc{dgm} in all possible trees when $L$ is not restricted.
+%
+%First, to calculate $f_n(u,v)$, we consider the number of intermediate nodes between $u$ and $v$. Note that, by definition of the $E_{\textsc{dgm}}(G_{\tau})$, the intermediate nodes must appear between $u$ and $v$, and for any set of intermediate nodes there is exactly one set of edges that leads to $(u,v)$ being a valid span, that is when there is no edge covered by another. If $k$ is the number of intermediate nodes, then there are $\binom{v-u-1}{k}$ ways to choose the path from $u$ to $v$, and we can multiply this by the number of trees that contain each path to get $f_n(u,v)$. Note that for a path with $k$ intermediate nodes, there are $k+2$ nodes, including $u$ and $v$, among the $n$ nodes which are already connected. If we remove these edges from the tree that contains the path, we will be left with a forest with $k+2$ components, as each of the $k+2$ nodes will be disconnected from each other, due to the property of trees that there is a unique path between any two nodes. So the number of trees that contain a path with $k+2$ nodes is equal to the number of forest with $n$ nodes and $k+2$ components, which is well-established as $(k+2)n^{n-k-3}$ (see, for example \cite[Chapter 30]{Aigner2010}).
+%
+%So we have:
+%\begin{eqnarray}
+%f_n(u,v) &=& \sum_{k=0}^{v-u-1}\binom{v-u-1}{k}(k+2)n^{n-k-3}\nonumber\\
+%&=& \sum_{k=0}^{v-u-1}\binom{v-u-1}{v-u-1-k}(v-u-1-k+2)n^{n-(v-u-1-k)-3}\nonumber\\
+%&=& n^{n-v+u-2}\sum_{k=0}^{v-u-1}\binom{v-u-1}{k}(v-u+1-k)n^k\nonumber\\
+%&=& n^{n-v+u-2}\left[(v-u+1)\sum_{k=0}^{v-u-1}\binom{v-u-1}{k}n^k - \sum_{k=0}^{v-u-1}\binom{v-u-1}{k}kn^k\right]\nonumber\\
+%&=& n^{n-3-(v-u-1)}\left[(v-u+1)(n+1)^{v-u-1} - n(v-u-1)(n+1)^{v-u-2}\right]\nonumber\\
+%&=& n^{n-3}\left[(v-u+1)\left(1+\frac{1}{n}\right)^{v-u-1} - (v-u-1)\left(1+\frac{1}{n}\right)^{v-u-2}\right]\nonumber\\
+%&=& n^{n-3}\left[\left(v-u+1 - \frac{n(v-u-1)}{n+1}\right)\left(1+\frac{1}{n}\right)^{v-u-1}\right]\nonumber\\
+%&=& n^{n-3}\left(\frac{2n+1+v-u}{n+1}\right)\left(1+\frac{1}{n}\right)^{v-u-1}\nonumber
+%\end{eqnarray}
+%
+%To get from (1) to (2) we used the expansion of binomial formula and its derivative, as follows:
+%\begin{align*}
+%\qquad\qquad\qquad\qquad\qquad\qquad&&(x+1)^n &= \sum_{k=0}^n\binom{n}{k}x^k&&\nonumber\\
+%\qquad\qquad\qquad\qquad\qquad\qquad&&n(x+1)^{n-1} &= \sum_{k=0}^n\binom{n}{k}kx^{k-1}&&\text{(take derivative both sides)}\nonumber\\
+%\qquad\qquad\qquad\qquad\qquad\qquad&&nx(x+1)^{n-1} &= \sum_{k=0}^n\binom{n}{k}kx^k&&\text{(multiply by $x$)}\nonumber
+%\end{align*}
+%\noindent with $n$ and $x$ substituted for $v-u-1$ and $n$ respectively to get from (1) to (2). Note that since the formula depends on $u$ and $v$ only from the difference $v-u$, let us define $f_n(k) = f_n(u, u+k)$.
+%
+%Now, the number of total edges is the sum of $f_n(u,v)$ over all possible values for $u$ and $v$, yielding our final formula for $F(n, L)$, the total number of edges when the maximum valid span is of length $L$:
+%\begin{eqnarray}
+%F(n,L) \!\!&=& \sum_{u=1}^{n-1}\sum_{v=u+1}^{u+L-1} f_n(u,v)\nonumber\\
+%&=& \sum_{k=1}^{L-1}\sum_{u=1}^{n-k} f_n(k)\nonumber\\
+%&=& \sum_{k=1}^{L-1}(n-k)n^{n-3}\left(\frac{2n+1+k}{n+1}\right)\left(1+\frac{1}{n}\right)^{k-1}\nonumber\\
+%&=& \frac{n^{n-3}}{n+1}\sum_{k=1}^{L-1}(n-1-(k-1))(2n+2+(k-1))\left(1+\frac{1}{n}\right)^{k-1}\nonumber\\
+%&=& \frac{n^{n-3}}{n+1}\sum_{k=0}^{L-2}(n-1-k)(2n+2+k)\left(1+\frac{1}{n}\right)^k\nonumber\\
+%&=& \frac{n^{n-3}}{n+1}\left[(n-1)(2n+2)\sum_{k=0}^{L-2}\left(1+\frac{1}{n}\right)^k - (n+3)\sum_{k=0}^{L-2}k\left(1+\frac{1}{n}\right)^k - \sum_{k=0}^{L-2}k^2\left(1+\frac{1}{n}\right)^k\right]\ \ \ \ \nonumber\\
+%&=& \frac{n^{n-3}}{n+1}\left[(n-1)(2n+2)n\left(\left(1+\frac{1}{n}\right)^{L-1}-1\right)\right.\nonumber\\
+%&& -(n+3)\left(n(L-1)\left(1+\frac{1}{n}\right)^{L-1}-n^2\left(1+\frac{1}{n}\right)^{L}+n^2\left(1+\frac{1}{n}\right)\right)\nonumber\\
+%&& \left.-(n(L-2)^2-2n^2(L-2)+2n^3+n^2)\left(1+\frac{1}{n}\right)^{L-1}+n^3\left(1+\frac{1}{n}\right)^2+n^3\left(1+\frac{1}{n}\right)\right]\nonumber\\
+%&=& \frac{n^{n-3}}{n+1}\left[n(n^2+L(n-L+1))\left(1+\frac{1}{n}\right)^{L-1}-n^2(n+1)\right]\nonumber\\
+%&=& \frac{n^{n-2}}{n+1}\left[(n^2+L(n-L+1))\left(1+\frac{1}{n}\right)^{L-1}-n(n+1)\right]\nonumber
+%\end{eqnarray}
+%\noindent which, when $L = n$, that is when we do not restrict the valid span length, we have:
+%\begin{eqnarray}
+%F(n, n) &=& n^{n-1}\left[\left(1+\frac{1}{n}\right)^{n-1}-1\right] = (n+1)^{n-1} - n^{n-1}\nonumber
+%\end{eqnarray}
+%
+%We used geometric sums formula and its derivatives (equations (5), (6), and (7)) to get from (3) to (4):
+%\begin{eqnarray}
+%\frac{x^{n+1}-1}{x-1} \!\!&=&\!\! \sum_{k=0}^n x^k\nonumber\\
+%\frac{(n+1)x^{n+1}(x-1) - x(x^{n+1}-1)}{(x-1)^2} \!\!&=&\!\! \sum_{k=0}^n kx^k\nonumber\\
+%\frac{nx^{n+2}-(n+1)x^{n+1}+x}{(x-1)^2} \!\!&=&\!\! \sum_{k=0}^n kx^k\nonumber\\
+%x\frac{(n(n+2)x^{n+1}-(n+1)^2x^n+1)(x-1)^2 - 2(nx^{n+2}-(n+1)x^{n+1}+x)(x-1)}{(x-1)^4} \!\!&=&\!\! \sum_{k=0}^n k^2x^k\nonumber\\
+%x\frac{(n(x-1)(n(x-1)-2)+x+1)x^n-x-1}{(x-1)^3} \!\!&=&\!\! \sum_{k=0}^n k^2x^k\quad\nonumber
+%\end{eqnarray}
+%
+%Finally, the average of number of edges is $F(n, n)$, plus the number of valid spans covering one word, which is $n\cdot{}n^{n-2}$, divided by total number of trees, which is $T(n,1) = n^{n-2}$, which yields the average:
+%
+%\begin{eqnarray}
+%\bar{F}(n) &=& \frac{((n+1)^{n-1}-n^{n-1}) + n^{n-1}}{n^{n-2}}\nonumber\\
+%&=& n\left(1+\frac{1}{n}\right)^{n-1}\nonumber\\
+%&\leq& \mathbf{e}n\nonumber
+%\end{eqnarray}
+%\noindent where $\mathbf{e}$ is the Euler's number, which is approximately 2.718.
+%
+%So we can see that on average, the number of edges present in the \textsc{dgm} model for one entity type is linear in terms of $n$, the number of words in the sentence. When there are $\left\lvert T\right\rvert$ types, the number of edges will be multiplied by $\left\lvert T\right\rvert^2$ since for each edge there are $\left\lvert T\right\rvert^2$ possible type combination for the start and end of the span. {\bf Therefore the time complexity of the training process of \textsc{dgm} model when there are $\left\lvert T\right\rvert$ types is $\mathcal{O}(n\left\lvert T\right\rvert^2)$.}
+%
+%%\subsubsection{Second Method: Bijection}
+%%If we are interested only in the case where $L=n$ (i.e., we do not limit the length of valid spans), then the total number of edges (both transitive and the original edges) in the \textsc{dgm} model (including those spans covering one word) can also be counted by defining a bijection between each edge and a tree with $(n+1)$ nodes.
+%%
+%%Let $\mathcal{T}(n+1)$ be the set of trees with $(n+1)$ nodes, and let $E(G_T)$ be the set of edges in a graph $G_T$ from the \textsc{dgm} model with $n$ nodes with the undirected dependency tree $T$. Then the set of all edges over all possible graph is $E_{\textsc{dgm}}(n) =\cup_{T\in\mathcal{T}(n)}E_{\textsc{dgm}}(G_T)$, where $\mathcal{T}(n)$ is the set of all possible trees with $n$ nodes.
+%%
+%%The bijection from $E_{\textsc{dgm}}$ to $\mathcal{T}(n+1)$ is defined as follows: for each edge $(u,v) \in E_{\textsc{dgm}}$ covering the word $u$ to word $v$, suppose it is coming from the graph $G_T$. By definition, we have either $u=v$, in which case there is no corresponding chain of edges in the original dependency tree $T$, or $u\neq v$ and there is a chain of edges in the original dependency tree $T$ that connects $u$ to $v$. Note that this chain of edges is unique, as the nodes involved in the chain must be increasing. In both cases, we can map this edge in the graph $G_T$ to a tree $T_{n+1}\in\mathcal{T}(n+1)$ where the edges for the first $n$ nodes coincide with $T$, but with the chain of edges removed, and the nodes involved in the chain of edges connected to the $(n+1)$-th node. This is well-defined since the resulting graph is still connected and has $n$ edges over $(n+1)$ nodes, which means it is a tree with $(n+1)$ nodes. This mapping is bijective because for each edge it maps to exactly one tree in $\mathcal{T}(n+1)$, and for each tree in $\mathcal{T}(n+1)$ there is exactly one edge which maps to it, namely the edge obtained by reversing the process above. Therefore, the number of total edges in $E_{\textsc{dgm}}$ is equal to the number of trees in $\mathcal{T}(n+1)$, which is $(n+1)^{n-1}$. And we get the same average number of edges as in the first method.
+%
+
+\subsubsection{Empirical Count}
+In this subsection, we calculate empirically the relationship between the number of edges present per sentence in each model and $n$, the sentence length, to provide an evidence for the theoretical analysis presented in previous subsection in a dataset where most of the trees are projective. We compute this by averaging the number of edges per sentence in all 7 subsections of the dataset. Figure \ref{fig:ncomplexity} shows the result. We can see that the number of edges in semi-CRFs model is much more than that of \textsc{dgm} and \textsc{dgm-s}. All three models have a linear complexity in terms of $n$. However, note that the semi-CRFs model comes with a scaling factor $L$, while our models do not. For the purpose of the calculation of number of edges in the semi-CRFs model, we used $L=8$, the same as the one we used in the main paper.
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=4in]{Figures/ncomplexity.eps}
+	\caption{The average number of edges over all sentences in all datasets with respect to sentence length $n$. For semi-CRF, we set $L=8$. Also note that in the dataset we have $\left\lvert T\right\rvert=5$ (\textsc{per}, \textsc{org}, \textsc{gpe}, \textsc{misc}, and special label \textsc{o} denoting non-entities)}.
+	\label{fig:ncomplexity}
+\end{figure}
+
+We also calculated the average number of edges involved per token by averaging the average number of edges per token, over all sentences. More formally, let the number of sentences in a dataset be $N$,  the number of edges in $i$-th sentence be $E_i$, and the length of $i$-th sentence be $n_i$. Then the average number of edges involved per token $\bar{E}$ is:
+\begin{equation*}
+\bar{E} = \frac{\displaystyle\sum_{i=1}^{N}\frac{E_{i}}{n_{i}}}{N}.
+\end{equation*}
+Table \ref{tab:edges} shows the average number of edges involved per token for different models.
+Since the number of edges in our models is linear in terms of $n$, the average number of edges per token will be constant, plus some small variance accounting for the boundary cases in the data.
+%Because \textsc{dgm-s} model has an equivalent time complexity to linear-chain CRFs, the number of possible edges for each token will always be the same. 
+%\textsc{dgm} also has a stable number of possible edges and though it is about 20 edges more than \textsc{dgm-s} but still much lower than semi-CRFs. 
+This also explains the fact that both \textsc{dgm-s} and \textsc{dgm} models perform much faster compared to the semi-CRF model.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{lcccccccc}
+		\toprule
+		& ABC & CNN  & MNB & NBC & P2.5 & PRI & VOA & Avg. \\ 
+		\midrule
+		\textsc{dgm-s} & 39.1 & 39.8 & 37.9 & 38.9 & 40.9 & 39.8 & 40.7 &39.5\\
+		\textsc{dgm} & 57.3 & 62.9 & 53.7 & 56.2 & 71.3 & 59.8 & 65.5& 61.0  \\
+		semi-CRFs & 117.8 & 133.9 & 110.3 & 119.8 & 172.4 & 126.4 & 144.3 & 132.1 \\\bottomrule
+	\end{tabular}
+	\caption{The average number of possible edges involved in each token when we construct the model. }
+	\label{tab:edges}
+\end{table}
+
+
+
+
+%-----------------------------------
+%	SUBSECTION 2
+%-----------------------------------
+
+\section{Experimental Setup}
+For experiments, we followed~\cite{finkel2009joint} and used the Broadcast News section of the OntoNotes dataset.
+Instead of using its earlier 2.0 release, we used the final release --  release 5.0 of the dataset, which is available for download\footnote{https://catalog.ldc.upenn.edu/LDC2013T19/}.
+The dataset includes the following 6 subsections: ABC, CNN, MNB, NBC, PRI and VOA. 
+Moreover, the current OntoNotes 5.0 release also includes some English P2.5 data, which consists of corpus translated from Chinese and Arabic.\footnote{The OntoNotes 5.0 dataset also contains the earlier release from OntoNotes 1.0 to OntoNotes 4.0. However, we found the number of sentences of the Broadcast News in the current OntoNotes 5.0 dataset does not match the number reported in \cite{finkel2009joint,finkel2010hierarchical}, which was based on OntoNotes 2.0. Furthermore, they removed some instances which are inconsistent with their model. We thus cannot conduct experiments to compare against the results reported in their work.}
+Following~\cite{finkel2009joint}, we split the first 75\% of the data for training and performed evaluations on the remaining 25\%.
+We set $L=8$, which can cover all entities in our dataset, and developed the $L_2$ coefficient using cross-validation (see supplementary material S.1 for details). 
+%However, there is no dependency annotation in OntoNotes 5.0 dataset. 
+Following previous works on dependency parsing~\cite{chen2014fast}, we preprocessed the dataset using the Stanford CoreNLP\footnote{http://stanfordnlp.github.io/CoreNLP/} to convert the constituency trees to basic Stanford dependency~\cite{de2006generating} trees. 
+% The LTH Constituent-to-Dependency conversion tool cannot deal with the tag in ontonotes treebanks such as META and EDITED. 
+%\footnote{Following previous work~\cite{??}, we ignored sentences with certain special tags such as META and EDITED that do not appeared in the penn treebank.}.
+In our NER experiments, in addition to using the given dependency structures converted from the constituency trees, we also trained a popular transition-based parser, MaltParser\footnote{http://maltparser.org/}~\cite{nivre2006maltparser}, using the training set and then used this parser to predict the dependency trees on the test set to be used in our model. 
+%
+%applied the dependency prediction as the known structures. 
+
+
+
+
+
+We also looked at the SemEval-2010 Task 1 OntoNotes English corpus\footnote{https://catalog.ldc.upenn.edu/LDC2011T01/}, which contains sentences with both dependency and named entity information.
+Although this dataset is a subset of the OntoNotes dataset, it comes with manually annotated dependency structures.
+%We conducted experiments on this dataset and reported the results in the supplementary material (S.2).
+%The results on this dataset are consistent with the findings reported in this chapter.
+%Similar conclusions as discussed in this section can be drawn based on this dataset.
+
+
+
+%evaluation method as in the CONLL 2003 \textit{conlleval}\footnote{http://www.cnts.ua.ac.be/conll2000/chunking/output.html}.
+
+
+\subsection{Features}
+In order to make comparisons, we implemented a linear-chain CRFs model as well as a semi-Markov CRFs model to serve as baselines. 
+The features we used are basic features which are commonly used in linear-chain CRFs and semi-CRFs. 
+For the linear-chain CRFs, we consider the current word/POS tag, the previous word/POS tag, the current word shape, the previous word shape, prefix/suffix of length up to 3, as well as transition features. 
+For word shape features, we followed \cite{finkel2005exploring} to create them. 
+For the semi-CRFs model, we have the following features for each segment: the word/POS tag/word shape before and after the segment, indexed words/POS tags/word shapes in current segment, surface form of the segment, segment length, segment prefix/suffix of length up to 3, the start/end word/tags of current segment, and the transition features. 
+
+Inspired by \citet{ling2012fine}, we applied the following dependency features for all models: (1) current word in current position/segment and its head word (and its dependency label); (2) current POS tag in current position/segment and its head tag (and  dependency label). More details of features can be found in the supplementary material (S.4).
+
+
+\subsection{Feature Representations}
+This section gives an example on the feature representation defined in Features section in the main paper. 
+For illustration purpose, we take the first sentence of Figure 1 in the main paper as an example. 
+The code released has the detailed feature implementation as well.
+
+Say that we are currently at the position of word ``\textit{Ami}''. The features in the linear-chain CRF model is represented in table \ref{tab:linearf}. In semi-CRFs model, the features are defined over segment. We take the segment ``\textit{Shlomo Ben - Ami}'' as an example to describe the features in Table \ref{tab:semif}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{ll}
+		\toprule
+		Features & Examples \\ \hline
+		current word & \textit{Ami} \\ 
+		current POS & NNP \\ 
+		previous word & \textit{-} \\ 
+		previous POS & HYPH \\ 
+		current word shape & Xxx \\ 
+		previous word shape & - \\ 
+		prefix up to length 3 & \textit{A}, \textit{Am}, \textit{Ami} \\ 
+		suffix up to length 3 & \textit{i}, \textit{mi}, \textit{Ami} \\ 
+		transition & \textsc{i-per} + \textsc{i-per} \\
+		\midrule
+		\midrule
+		Dependency features & Examples \\
+		\midrule 
+		current word + head & \textit{Ami} + \textit{gave} \\ 
+		current word + head + label & \textit{Ami} + \textit{gave} + nsubj \\ 
+		current POS + head POS & NNP + VBD \\ 
+		current POS + head POS + label & NNP + VBD + nsubj \\ 
+		\bottomrule 
+	\end{tabular}\quad 
+	\caption{The features for the example sentence in the linear-chain CRFs model.}
+	\label{tab:linearf}
+\end{table}
+
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{ll}
+		\toprule 
+		Features & Examples \\ 
+		\midrule
+		word before segment & \textit{Minister} \\ 
+		POS before segment & NNP \\ 
+		word shape before segment & Xxxx \\ 
+		word after segment & \textit{gave} \\ 
+		POS after segment & VBD \\ 
+		word shape after segment & xxxx \\ 
+		prefix up to length 3 & \textit{S}, \textit{Sh}, \textit{Shl} \\ 
+		suffix up to length 3 & \textit{i}, \textit{mi}, \textit{Ami} \\ 
+		start word & start:+\textit{Shlomo} \\ 
+		end word & end:+\textit{Ami} \\ 
+		start POS & start POS:+NNP \\ 
+		end POS & end POS:+NNP \\ 
+		segment length & 4 \\ 
+		transition & \textsc{o} + \textsc{per} \\ 
+		indexed word & 1:\textit{Shlomo}, 2:\textit{Ben}, 3:\textit{-}, 4:\textit{Ami} \\ 
+		indexed POS & 1:NNP, 2:NNP, 3:HYPH, 4:NNP \\ 
+		indexed shape & 1:Xxxx, 2:Xxx, 3:-, 4:Xxx \\ 
+		the whole segment & \textit{Shlomo Ben - Ami} \\ 
+		dependency & same as dependency features in Table \ref{tab:linearf} \\ \bottomrule
+		
+	\end{tabular}\quad 
+	%	\begin{tabular}{|l|l|}
+	%		\hline 
+	%		Features & Examples \\ \hline
+	%		
+	%	\end{tabular}
+	\caption{The features for the example sentence in the semi-CRFs model.}
+	\label{tab:semif}
+\end{table}
+
+
+
+\subsection{Data Statistics}
+There are in total 18 well-defined named entity types in the OntoNotes 5.0 dataset. 
+Since majority of the entities are from the following three types: \textsc{per} ({\em person}), \textsc{org} ({\em organization}) and \textsc{gpe} ({\em geo-political entities}), following \cite{finkel2009joint}, we merge all the other entity types into one general type, \textsc{misc} ({\em miscellaneous}). 
+%In other words, we consider the following four distinct entity types: \textsc{per}, \textsc{org}, \textsc{gpe} and \textsc{misc}. 
+Table \ref{tab:dgmstatistics} shows the statistics of total number of sentences and entities.
+
+
+\begin{table}[h!]
+	\centering
+	
+	\begin{tabular}{lrrrrr}
+		\toprule
+		\multirow{2}{*}{} & \multirow{2}{*}{\# Sent.} & \multicolumn{3}{c}{\# Entities}\\
+		\cline{3-5}
+		&&\multicolumn{1}{c}{\textsc{all}}&\multicolumn{1}{c}{\textsc{dgm-s}}&\multicolumn{1}{c}{\textsc{dgm}}\\
+		\midrule
+		Train                   & 9,996                        & 18,855                         & 17,584 (93.3\%)               & 18,803 (99.7\%)                 \\
+		Test			& 3,339                          & 5,742                         & 5,309 (92.5\%)               & 5,720 (99.6\%)               \\
+		%		\hline
+		\bottomrule
+	\end{tabular}
+	
+	\caption{Dataset statistics. }
+	\label{tab:dgmstatistics}
+\end{table}
+
+% in all the subsections. 
+
+%\begin{table}[h]
+%	\centering
+%	\begin{tabular}{c|rrrr}
+%		& \multicolumn{2}{c}{Train+Dev} &  \multicolumn{2}{c}{Test} \\ 
+%		& \# Sent.  & \# Entity & \# Sent. 	& \# Entity  \\\hline
+%		ABC & 859   & 950 		& 286   	& 330 \\ 
+%		CNN & 4,148 & 4,514 	& 1,382 	& 1,115 \\ 
+%		MNB & 478   & 475 		& 159  		& 111  \\ 
+%		NBC & 479   & 691 		& 160 		& 210 \\ 
+%		PRI & 1,536 &2,449  	& 512		& 772 \\ 
+%		VOA & 1,423 & 3,228   	& 474		& 1,131
+%	\end{tabular}
+%	\caption{Dataset Statistics. The number of sentences and entities in the OntoNotes 5.0 dataset. }
+%	\label{tab:statistics}
+%\end{table}
+
+To show the relationships between the named entities and dependency structures, we present the number and percentage of entities that can be handled by our \textsc{dgm-s} model and \textsc{dgm} model respectively.
+The entities that can be handled by \textsc{dgm-s} should be covered by a single arc as indicated in our model section. As for \textsc{dgm}, the entity spans should be {\em valid} as in definition 1. 
+Overall, we can see that 93.3\% and 92.5\% of the entities can be handled by the \textsc{dgm-s} model in training set and test set, respectively. 
+These two numbers for \textsc{dgm} are much higher -- 99.7\% and 99.6\%. 
+With the predicted dependency structures in test set, 91.7\% of the entities can be handled by the \textsc{dgm-s} model, while for \textsc{dgm} it is 97.4\%.
+
+
+These numbers confirm that it is indeed the case that most named entities do form {\em valid spans}, even when using predicted dependency trees,
+and that such global structured information of dependency trees can be exploited for NER.
+
+\subsection{Detailed Data Statistics and Parameter Tuning}
+Table \ref{tab:detailedstatistics} shows the detailed statistics of all subsections. 
+Overall, over 99.6\% entities are representable in \textsc{dgm} model and around 91\% to 94\% entities are representable \textsc{dgm-s} model. 
+\begin{table}[h]
+	
+	\centering
+	\resizebox{1\linewidth}{!}{
+	\begin{tabular}{lrrrrrrrr}
+		\toprule
+		& \multicolumn{4}{c}{Train} & \multicolumn{4}{c}{Test} \\
+		& \multirow{2}{*}{\# Sent.} & \multicolumn{3}{c}{\# Entity} & \multirow{2}{*}{\# Sent.} & \multicolumn{3}{c}{\# Entity}\\
+		&&\multicolumn{1}{c}{\textsc{all}}&\multicolumn{1}{c}{\textsc{dgm-s}}&\multicolumn{1}{c}{\textsc{dgm}}  &&\multicolumn{1}{c}{\textsc{all}}&\multicolumn{1}{c}{\textsc{dgm-s}}&\multicolumn{1}{c}{\textsc{dgm}}\\
+		\midrule
+		ABC                   & 873                          & 1,365                         & 1,281 (93.9\%)               & 1,360 (99.6\%)                	& 292                         & 444                           & 415 (93.5\%)               & 444 (100.0\%)                \\
+		CNN                   & 4,318                        & 6,627                        & 6,113 (92.2\%)              & 6,609 (99.7\%)                & 1,440                        & 1,620                         & 1,474 (91.0\%)               & 1,613 (99.6\%)                \\
+		MNB                   & 477                          & 690                           & 653 (94.6\%)               & 689 (99.9\%)                	& 160                          & 177                           & 162 (91.5\%)                & 176 (99.4\%)                \\
+		NBC                   & 480                         & 922                           & 868 (94.1\%)               & 918 (99.6\%)                 & 161                          & 343                           & 312 (91.0\%)               & 340 (99.1\%)                \\
+		P2.5                   & 890                          & 1,995                          & 1,827 (91.6\%)               & 1,988 (99.7\%)                 	& 298                          & 672                           & 616 (91.7\%)               & 669 (99.6\%)                \\
+		PRI                   & 1,536                        & 3,096                         & 2,916 (94.2\%)               & 3,090 (99.8\%)                 	& 513                          & 992                           & 927 (93.5\%)               & 990 (99.8\%)                \\
+		VOA                   & 1,422                        & 4,160                         & 3,926 (94.4\%)               & 4,149 (99.7\%)                 	& 475                          & 1,494                         & 1,403 (93.9\%)               & 1,488 (99.6\%)               \\	
+		Total                   & 9,996                        & 18,855                         & 17,584 (93.3\%)               & 18,803 (99.7\%)                 & 3,339                          & 5,742                         & 5,309 (92.5\%)               & 5,720 (99.6\%)               \\
+		\bottomrule
+		%		\hline
+		%		\multirow{2}{*}{Test} & \multirow{2}{*}{\# Sent.} & \multicolumn{3}{c}{\# Entity}\\
+		%		\cline{3-5}
+		%		&&\multicolumn{1}{c}{\textsc{all}}&\multicolumn{1}{c}{\textsc{dgm-s}}&\multicolumn{1}{c}{\textsc{dgm}}\\
+		%		\hline
+		%		ABC			& 292                         & 444                           & 415 (93.5\%)               & 444 (100.0\%)                \\
+		%		CNN			& 1,440                        & 1,620                         & 1,474 (91.0\%)               & 1,613 (99.6\%)                \\
+		%		MNB			& 160                          & 177                           & 162 (91.5\%)                & 176 (99.4\%)                \\
+		%		NBC			& 161                          & 343                           & 312 (91.0\%)               & 340 (99.1\%)                \\
+		%		P2.5			& 298                          & 672                           & 616 (91.7\%)               & 669 (99.6\%)                \\
+		%		PRI			& 513                          & 992                           & 927 (93.5\%)               & 990 (99.8\%)                \\
+		%		VOA			& 475                          & 1,494                         & 1,403 (93.9\%)               & 1,488 (99.6\%)               \\
+		%		Total			& 3,339                          & 5,742                         & 5,309 (92.5\%)               & 5,720 (99.6\%)               \\
+	\end{tabular}
+}
+	\caption{Dataset Statistics. The number of sentences and entities in the Broadcast News corpus of OntoNotes 5.0 dataset. }
+	\label{tab:detailedstatistics}
+\end{table}
+We tuned the $L_{2}$ regularization parameter using 10-fold cross-validation for all the models. 
+Specifically for each model, we performed cross validation on the largest subsection, CNN, and obtained the best parameter with highest average F-score. 
+We then used this parameter for other subsections as well. 
+The values of $L_{2}$ regularization parameter we evaluated is $[0.0001, 0.001, 0.01, 0.1, 1]$. Specifically, we have four models and each of them is associated with two variants with or without dependency features. 
+We obtained the best regularization parameter 0.1 for all the models except the \textsc{dgm-s} without dependency features, whose best regularization parameter is 1. 
+
+
+%\subsection{Hyper-parameter}
+%
+%The only hyper-parameter involved in all models is the $L_{2}$ regularization coefficient.
+%We tuned it for each model using cross-validation on the training set.
+%Specifically, we performed 10-fold cross-validation of the coefficient from the set $[0.0001, 0.001, 0.01, 0.1, 1]$ on the training set of the largest section -- CNN.
+%The resulting  coefficients are then used for all experiments for respective models.
+
+\section{Results and Discussions}
+%\begin{table*}[h]
+%	\centering
+%	\begin{tabular}{c|ccc|ccc|ccc|ccc}
+%		\multirow{3}{*}{F-score}& \multicolumn{6}{c|}{using given dependency structure} &\multicolumn{6}{c}{using predicted dependency structure} \\
+%		& \multicolumn{3}{c|}{w/o Dep features} &\multicolumn{3}{c|}{w Dep features}
+%		& \multicolumn{3}{c|}{w/o Dep features} &\multicolumn{3}{c}{w Dep features} \\
+%		& Semi   & SDG   & MDG   
+%		& Semi   & SDG   & MDG
+%		& Semi   & SDG   & MDG   
+%		& Semi   & SDG   & MDG \\ \hline
+%		ABC&	73.44 &	71.19 &	\textbf{74.62} 
+%		& 73.91 & 71.77 & \textbf{74.47}
+%		& 73.44 & 71.19 & \textbf{74.20} 
+%		& 74.02 & 71.36 & \textbf{74.47}\\
+%		CNN&		73.14&	72.50 &	\textbf{74.16} 
+%		&  73.35 & 73.33 & \textbf{73.60} 
+%		& 73.14 & 72.26 & \textbf{73.46} 
+%		& 72.64 & 72.33 & \textbf{72.64} \\ 
+%		MNB&	74.44 &	72.40 &		\textbf{75.34}
+%		&  76.99 & 73.21 & \textbf{77.33}
+%		& 74.44 & 72.73 & \textbf{75.43}
+%		& \textbf{76.99} & 73.21 & 76.65 \\
+%		NBC&	72.47 &	68.72&	\textbf{73.07}
+%		&  \textbf{70.40} & 68.08 & 70.23 
+%		& 72.47 & 68.41 & \textbf{72.60}
+%		& \textbf{71.30} & 68.40 & 71.00\\
+%		PRI	&		84.79&	85.81&	\textbf{87.52}
+%		&  86.10 & 85.90 & \textbf{87.10} 
+%		& 84.79 & 85.36 & \textbf{86.61}
+%		& \textbf{86.51} & 84.82 & 86.20\\
+%		VOA	&		83.62&	84.85&	\textbf{85.57}
+%		& 85.08 & 85.17 & \textbf{85.45}
+%		& 83.62 & 84.31 & \textbf{85.04}
+%		& \textbf{85.13} & 85.00 & \textbf{85.13}\\
+%		Overall &  78.84 &  &
+%		&  & &  
+%		& 78.84 & &
+%		& 79.57 & &
+%	\end{tabular}
+%	\caption{Named Entity Recognition (with both given and predicted dependency structures) Results on OntoNotes 5.0 dataset}
+%	\label{tab:nerresult}
+%\end{table*}
+
+
+
+
+
+
+\subsection{NER Performance}
+Following previous work~\cite{finkel2009joint}, we report standard  F-score in this section (detailed results with precision and recall can be found in the supplementary material S.5). 
+Table \ref{tab:ner_withdpfeatures} shows the results of all models when  dependency features are exploited.
+Specifically, it shows results when the given and predicted dependency trees are considered, respectively.
+Overall, the semi-Markov CRFs, \textsc{dgm-s} and \textsc{dgm} models perform better than the linear-chain CRFs model. 
+Our \textsc{dgm} model obtains an overall F-score at 80.5\%  and outperforms the semi-CRFs model significantly ($p<0.001$ with bootstrap resampling~\cite{koehn2004statistical}).
+%and achieve a significant level with $p<0.001$ against semi-CRF. 
+For individual subsection, our \textsc{dgm} also performs the best.
+On 2 out of the 7 subsections, our model's improvements over the baseline semi-CRFs model are significant ($p<0.001$ with bootstrap resampling).
+For some other subsections like ABC, CNN, MNB, NBC and PRI, \textsc{dgm} has higher F-score than the semi-CRFs model but the improvements are not statistically significant.
+The results show that comparing with  semi-CRFs, our \textsc{dgm} model, which has a lower average-case time complexity, still maintains a competitive performance. 
+Such results confirm that the global structured information conveyed by dependency trees are useful and can be exploited by our \textsc{dgm} model.
+
+\begin{table*}[h!]
+	\centering
+	\resizebox{1.0\linewidth}{!}{
+		\begin{tabular}{crcccccccc}
+			\toprule
+			Dependency	& Model                  & ABC                               & CNN                               & MNB                               & NBC                               & P2.5                              & PRI                               & VOA  &Overall                           \\ 
+			\midrule
+			\multirow{4}{*}{Given}&Linear-chain CRFs & 70.2                              & 75.9                              & \textbf{75.7}                     & 65.9                              & 70.8                              & 83.2                              & 84.6                              & 77.8                              \\
+			&Semi-Markov CRFs  & \textbf{71.9}                     & \textbf{78.2}                     & \textbf{74.7}                     & \textbf{69.4}                     & 73.5                              & \textbf{85.1}                     & 85.4                              & 79.6                              \\
+			&\textsc{dgm-s}            & 71.4                              & 77.0                              & 73.4                              & 68.4                              & 72.8                              & \textbf{85.1}                     & 85.2                              & 79.0                              \\
+			& \textsc{dgm}              & \textbf{72.3}                     & \textbf{78.6}                     & \textbf{76.3}                     & \textbf{69.7}                     & \textbf{75.5}                     & \textbf{85.5}                     & \textbf{86.8}                     & \textbf{80.5}                     \\
+			\midrule
+			\midrule
+			\multirow{4}{*}{Predicted}& Linear-chain CRFs & 68.4          & 75.4          & 74.4          & 66.3          & 70.8          & 83.3          & 83.7          & 77.3          \\
+			& Semi-Markov CRFs  & \textbf{71.6} & \textbf{78.0} & 73.5          & \textbf{71.5} & \textbf{73.7}          & \textbf{84.6} & \textbf{85.3} & \textbf{79.5} \\
+			&\textsc{dgm-s}            & 70.6          & 76.4          & 73.4          & 68.7          & 71.3          & \textbf{83.9} & 84.4          & 78.2          \\
+			&\textsc{dgm}              & \textbf{71.9} & \textbf{77.6} & \textbf{75.4} & \textbf{71.4} & \textbf{73.9} & \textbf{84.2} & \textbf{85.1} & \textbf{79.4} \\
+			\bottomrule
+		\end{tabular}
+	}
+	\caption{NER results for all models, when given and predicted dependency trees are used and dependency features are used. Best values and the values which are not significantly different in 95\% confidence interval are put in bold.}
+	\label{tab:ner_withdpfeatures}
+\end{table*}
+
+
+
+The performance of \textsc{dgm-s} is worse than that of semi-CRFs and \textsc{dgm} in general since there are still 
+many named entities that can not be handled by such a simplified model (see Table \ref{tab:detailedstatistics}).
+This model has the same time complexity as the linear-chain CRFs, but performs better than linear-chain CRFs, largely due to the fact that certain structured information of dependency trees are exploited in \textsc{dgm-s}.
+%still a large portion of data does not satisfy \textsc{dgm-s} model, while it has a complexity with linear-chain CRFs and better performance than linear chain CRFs. 
+We note that such a simplified model obtains similar results as semi-CRFs for the two larger subsections, PRI and VOA.
+This is largely due to the fact that a larger percentage of the entities in these two subsections can be handled by \textsc{dgm-s}.
+%These larger datasets have about 93\% of test data satisfy the model and \textsc{dgm-s} achieves similar result to semi-CRFs while having a linear-chain CRF time complexity. 
+%%For some datasets, like, our model DGM performs equally better compared to semi-crf with a p value. ***
+%% even though about 7\% not satisfy, our DGM-S model has a quite promising performance for those datasets.
+It is noted that the performance of both semi-CRFs and \textsc{dgm} degrades when the predicted dependency trees are used instead of the given.
+The drop in F-score for \textsc{dgm} is more significant as compared to the semi-CRFs.
+Nevertheless, their results remain comparable.
+Such experiments show the importance of considering high quality dependency structures for performing guided NER in our model.
+
+To understand the usefulness of the global structured information of dependency trees better, we conducted further experiments by excluding dependency features from our models.
+Such results are shown in Table \ref{tab:ner_withoutdpfeatures}.
+Our \textsc{dgm} model consistently performs competitively with the semi-CRFs model. 
+The only exception occurs when the ABC subsection is considered and the predicted dependency trees are used ($p$=0.067).
+In general, we can see that when dependency features are excluded, the overall F-score for all models drop substantially.
+However, we note that for semi-CRFs, the drop in F-score is 1.1\% for given dependency trees, and is 1.0\% for predicted trees,
+whereas for \textsc{dgm}, the drops with given and predicted trees are both 0.6\%.
+%Such results show that our model is able to effectively capture the useful global structured information of dependency trees.
+Overall, such results largely show that our proposed  model is able to effectively make use of the global structured information conveyed by dependency trees for NER. 
+
+\begin{table*}[h!]
+	\centering
+	\resizebox{1.0\linewidth}{!}{
+		\begin{tabular}{crcccccccc}
+			\toprule
+			Dependency	&	Model                  & ABC           & CNN           & MNB           & NBC           & P2.5          & PRI           & VOA           & Overall       \\ 
+			\midrule
+			\multirow{4}{*}{Given}&Linear-chain CRFs       & \multicolumn{1}{c}{66.5}          & \multicolumn{1}{c}{74.1}          & \multicolumn{1}{c}{74.9}          & \multicolumn{1}{c}{65.4}          & \multicolumn{1}{c}{70.8}          & \multicolumn{1}{c}{82.9}          & \multicolumn{1}{c}{82.3}          & \multicolumn{1}{c}{76.3}          \\
+			&Semi-Markov CRFs        & \multicolumn{1}{c}{\textbf{72.3}} & \multicolumn{1}{c}{76.6}          & \multicolumn{1}{c}{\textbf{75.0}} & \multicolumn{1}{c}{\textbf{69.3}} & \multicolumn{1}{c}{73.7}          & \multicolumn{1}{c}{84.1}          & \multicolumn{1}{c}{83.3}          & \multicolumn{1}{c}{78.5}          \\
+			&\textsc{dgm-s}                  & \multicolumn{1}{c}{69.4}          & \multicolumn{1}{c}{76.1}          & \multicolumn{1}{c}{73.4}          & \multicolumn{1}{c}{68.0}          & \multicolumn{1}{c}{72.5}          & \multicolumn{1}{c}{85.2}          & \multicolumn{1}{c}{85.1}          & \multicolumn{1}{c}{78.6}          \\
+			&\textsc{dgm}                    & \textbf{72.7} & \multicolumn{1}{c}{\textbf{77.2}} & \multicolumn{1}{c}{\textbf{75.8}} & \multicolumn{1}{c}{\textbf{68.5}} & \multicolumn{1}{c}{\textbf{76.8}} & \multicolumn{1}{c}{\textbf{86.2}} & \multicolumn{1}{c}{\textbf{85.5}} & \multicolumn{1}{c}{\textbf{79.9}} \\ 
+			\midrule
+			\midrule
+			
+			\multirow{4}{*}{Predicted}&Linear-chain CRFs       & 66.5          & 74.1          & 74.9          & 65.4          & 70.8          & 82.9          & 82.3           & 76.3          \\
+			&Semi-Markov CRFs        & \textbf{72.3} & \textbf{76.6} & \textbf{75.0} & \textbf{69.3} & \textbf{73.7} & 84.1          & 83.3          & \textbf{78.5} \\
+			&\textsc{dgm-s}                  & 69.1          & 75.6          & 73.8          & 67.2          & 72.0          & 84.5          & \textbf{84.2} & 78.0          \\
+			&\textsc{dgm}                    & 71.3          & \textbf{76.2} & \textbf{75.9} & \textbf{68.8} & \textbf{74.6} & \textbf{85.1} & \textbf{84.3} & \textbf{78.8}\\
+			\bottomrule
+		\end{tabular}
+	}
+	\caption{NER results for all models, when  given and predicted dependency trees are used but dependency features are not used. Best values and the values which are not significantly different in 95\% confidence interval are put in bold.}
+	\label{tab:ner_withoutdpfeatures}
+\end{table*}
+
+
+
+We have also conducted experiments on the widely-used NER dataset, CoNLL-2003, using the Stanford dependency parser\footnote{http://nlp.stanford.edu/software/nndep.shtml} to generate the dependency trees. 
+Using the same feature set that we describe in this work, our models do not achieve the state-of-the-art results on this dataset. However, they still perform comparably with the semi-CRFs model, while requiring much lesser running time.
+Note that since our goal in this work is to investigate the usefulness of incorporating the dependency structure information for NER, we did not attempt to tune the feature set to get the best result on a specific dataset.
+Also it is worth remarking that we still obtain a relatively good performance for our \textsc{dgm} model although the dependency parser is not trained within the dataset itself and that a correct dependency structure information is crucial for the \textsc{dgm} model.
+
+%The performance comparison becomes slightly different when we use the predicted dependency structures by MaltParser. 
+%Either semi-CRFs or \textsc{dgm} does not always has a higher F-score than each other. 
+%We believe the drop of \textsc{dgm} itself is caused by some wrongly classified dependencies may affect the model itself directly rather than features only. 
+%However, our DGM still has a similar result compare to Semi-Markov CRF since overall the semi-CRFs is not significantly better than \textsc{dgm} in F-score ($p=0.25$). 
+%Also in the experiments on MNB dataset, \textsc{dgm} performs better than semi-CRFs with $p<0.05$. 
+%Again, DGM-S has a similar result on PRI dataset compared to semi-CRF ($p=0.14$) since it also has a large portion (93.5\%) of test data with predicted dependency structures satisfy \textsc{dgm-s} model. Semi-CRF is not significantly better than DGM-S on VOA dataset either ($p=0.07$) and it also has 93\% of test data with predicted dependency structures satisfy DGM-S model. 
+%In our experiments, we also found that our DGM model can produce almost equivalent result even without adding the dependency information. 
+%We provide the results without dependency features in our supplementary materials (S.2). 
+%%We combine the results of all seven datasets for each model and apply the paired t-test for each of the two models. We obtain the significance level for F-score at $p<${\color{red}{(TODO)}} . 
+
+%Overall, DGM can produce similar or even better performance than semi-CRF when we have well-defined dependency structures. Furthermore, both DGM-S and DGM has a much lower running time in practice, which we can see in the speed analysis in the following section. 
+\begin{figure}[t!]
+	%	\centering
+	\begin{subfigure}[t]{0.48\columnwidth}
+		\centering
+		\begin{tikzpicture}[node distance=6mm and 9mm, >=Stealth, 	place/.style={draw=none, inner sep=0pt}]
+		\node[place,line width=1pt, minimum size=0.2cm] (13) {\small USS};
+		\node[place,line width=1pt, right=of p1, minimum size=0.2cm, xshift=-2mm] (14) {\small Cole};
+		\node[place,line width=1pt, right=of p2, minimum size=0.2cm, xshift=-2mm] (15) {\small Navy};
+		\node[place,line width=1pt, right=of p3, minimum size=0.2cm, xshift=0mm] (16) {\small destroyer};
+		\node [place](at) [below=of 13,yshift=2.65mm]{\scriptsize NNP};
+		\node [place](bt) [below=of 14,yshift=2.65mm] {\scriptsize NNP};
+		\node [place](ct) [below=of 15,yshift=3.0mm] {\scriptsize NNP};
+		\node [place](dt) [below=of 16,yshift=3.0mm]{\scriptsize NNP};
+		\node [place](ae) [below=of at,yshift=2.45mm]{\scriptsize \textsc{b-misc}};
+		\node [place](be) [below=of bt,yshift=2.5mm] {\scriptsize \textsc{i-misc}};
+		\node [place](ce) [below=of ct,yshift=2.5mm] {\scriptsize \textsc{b-org}};
+		\node [place](de) [below=of dt,yshift=2.5mm]{\scriptsize \textsc{o}};
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (14) to [out=120,in=60, looseness=1.1] node [above] {} (13);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (16) to [out=120,in=60, looseness=0.9] node [above] {} (14);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (16) to [out=120,in=60, looseness=1.1] node [above] {} (15);
+		\end{tikzpicture}
+		\caption{Given dependency tree}
+		\label{fig:error_given} 
+	\end{subfigure}
+	\begin{subfigure}[t]{0.48\columnwidth}
+		\centering
+		\begin{tikzpicture}[node distance=6mm and 9mm, >=Stealth, 	place/.style={draw=none, inner sep=0pt}]
+		\node[place,line width=1pt, minimum size=0.2cm, xshift=7mm] (13) {\small USS};
+		\node[place,line width=1pt, right=of p1, minimum size=0.2cm, xshift=5mm] (14) {\small Cole};
+		\node[place,line width=1pt, right=of p2, minimum size=0.2cm, xshift=5mm] (15) {\small Navy};
+		\node[place,line width=1pt, right=of p3, minimum size=0.2cm, xshift=6mm] (16) {\small destroyer};
+		\node [place](at) [below=of 13,yshift=2.65mm]{\scriptsize NNP};
+		\node [place](bt) [below=of 14,yshift=2.65mm] {\scriptsize NNP};
+		\node [place](ct) [below=of 15,yshift=3.0mm] {\scriptsize NNP};
+		\node [place](dt) [below=of 16,yshift=3.0mm]{\scriptsize NNP};
+		\node [place](ae) [below=of at,yshift=2.45mm]{\scriptsize \textsc{b-org}};
+		\node [place](be) [below=of bt,yshift=2.5mm] {\scriptsize \textsc{i-org}};
+		\node [place](ce) [below=of ct,yshift=2.5mm] {\scriptsize \textsc{i-org}};
+		\node [place](de) [below=of dt,yshift=2.5mm]{\scriptsize \textsc{o}};
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (15) to [out=120,in=60, looseness=0.9] node [above] {} (13);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (15) to [out=120,in=60, looseness=1.1] node [above] {} (14);
+		\draw [line width=1pt, -{Stealth[length=3.5mm, open]},->] (16) to [out=120,in=60, looseness=1.1] node [above] {} (15);
+		\end{tikzpicture}
+		\caption{Predicted dependency tree}
+		\label{fig:error_predicted} 
+	\end{subfigure}
+	\caption{The effect of different dependency parses on the output of \textsc{dgm}. These are taken out from a part of a sentence. The NER result in (a) is correct, while (b) is not.}
+	\label{fig:error_analysis}
+\end{figure}
+\subsection{Error Analysis}
+We provide a further analysis of how the dependency parsing performance affects NER based on Table \ref{tab:ner_withoutdpfeatures}. 
+%Because there is no dependency features involved in the model but the dependency structure information instead. 
+Because our model uses the dependency structure information directly instead of using them as features, we can analyze the influence of dependency structures on NER more clearly.
+Specifically, we focus on how the dependency parsing results affect the prediction of our \textsc{dgm} model. 
+
+A typical error made by our model taken from the results is shown in Figure \ref{fig:error_analysis} where the dependency tree in Figure \ref{fig:error_given} is given by the conversion of constituent parse tree and the other one in Figure \ref{fig:error_predicted} is predicted from the MaltParser. 
+The NER result on the left is correct while the one on the right is incorrect. 
+%We found that this is a typical error made by our model.
+Based on the predicted dependency structure in Figure \ref{fig:error_predicted}, there is no way to predict an entity type for ``{\em USS Cole}'' since this is not a valid span in \textsc{dgm} model. 
+Furthermore, \textsc{dgm} can actually recognize ``{\em Navy}'' as an \textsc{org} entity even though the predicted dependency is incorrect. 
+But the model considers ``{\em USS Cole Navy}'' as an entity due to the interference of other entity features ({\em e.g.}, NNP tag and Capitalized pattern) that ``{\em USS Cole}'' has. 
+While with the given dependency tree, \textsc{dgm} considers ``{\em USS Cole}'' as a valid span and correctly recognizes it as a \textsc{misc} entity. 
+
+
+\subsection{Speed Analysis}
+From Figure \ref{fig:graphexample} we can see that the running time required for each model depends on the number of edges that the model considers.
+We thus empirically calculated the average number of edges per word each model considers based on our training data.
+We found that the average number of edges involved in each token is 132 for the semi-CRFs model,
+while this number becomes 40 and 61 for \textsc{dgm-s} and \textsc{dgm} respectively.
+A lower number of edges indicates less possible structures to consider, and a reduced running time.
+See more detailed information  in the supplementary material (S.3.2).
+
+%More number of possible edges in Figure \ref{fig:graphexample} makes the inference slower since all of them are considered during the inference process.  
+%We calculated the number of possible edges for each sentence, summed up this number over all sentences and then averaged it by the number of sentences. 
+%The average number of edges involved in each token is 132 for semi-CRF while this statistics are 40 and 61 for DGM-S and DGM, respectively. 
+%Lower number of edges gives us less possible structures, which help us reduce the searching space. 
+%%can show the table if I still have some spaces. 
+The results on training time per iteration (inference time) for all 7 subsections are shown in Figure \ref{fig:time}. 
+From the figure we can see that the linear-chain CRFs model empirically runs the fastest.
+The simple \textsc{dgm-s} model performs comparably with linear-chain CRFs.
+The semi-CRFs model requires substantially longer time due to the additional factor $L$ (set to 8 in our experiments) in its time complexity.
+In contrast, our model \textsc{dgm} requires only 47\% of the time needed for semi-CRFs for each training iteration, and requires 37\% more time than the \textsc{dgm-s} model.
+%Such results match our theoretical analysis well.
+
+%The linear-chain CRFs model serves as a baseline which has the fastest speed because it has the lowest time complexity among four models. 
+%It is obvious to see that the conventional semi-CRFs is the slowest one on every dataset. 
+%Since our \textsc{dgm-s} has the theoretically same complexity as the linear-chain CRFs, the inference time is slightly slower than Linear-chain CRF but much faster than the conventional semi-CRF. 
+%For our DGM, though it has a higher complexity than DGM-S on average, the inference time is still much faster than the conventional semi-CRF over each of the seven datasets. 
+%Empirically, the running time of \textsc{dgm} is 1.37 times more than \textsc{dgm-s} but 47\% of semi-CRF, especially for the larger dataset like CNN, PRI and VOA. Even though when the dataset size is small, the speed improvement by \textsc{dgm} is significant, with about 46\% running time of semi-CRF on ABC, MNB and NBC datasets.  
+
+\begin{figure}[h!]
+	\centering
+	\scalebox{1}{
+		\includegraphics[width=4in]{Figures/decode_bold.eps}
+	}
+	\caption{Training time per iteration of all the models.}
+	\label{fig:time}
+\end{figure}
+
+%\begin{table}[h]
+%	\centering
+%	\begin{tabular}{c|c|c}
+%		Decoding Time & without  & with  \\
+%		(s/sent) 		& dep features & dep features \\ \hline
+%		Semi-Markov	& 1.008&	1.362 \\
+%		%Linear-chain &	0.318&	0.344\\
+%		DGM-S				& 0.354&	0.430 \\
+%		DGM			& 0.704&	0.803 \\
+%	\end{tabular}
+%	\caption{The decoding time of all the models on OntoNotes 5.0 dataset}
+%	\label{tab:decodingtime}
+%\end{table}
+%%Use matlab to draw a graph tomorrow, basically two lines.
+
+
+
+\subsection{Results on SemEval-2010 Task 1 Dataset}
+
+The dataset in SemEval-2010 Task 1 is a subset of OntoNotes English corpus. The dependency and named entities information are annotated in this dataset. 
+There are a total of 3,648 sentences with 4,953 entities in the training set, 741 sentences with 1,165 entities in the development set, and 1,141 sentence with 1,697 entities in the test set. 
+In this dataset, we found that overall 92.7\% of entities are representable in \textsc{dgm-s} and 96.6\% of entities are representable in \textsc{dgm}. 
+%%Talks about the number of entities as well.
+
+Table \ref{tab:semres} and Table \ref{tab:semnodepres} show the NER performance of all models on SemEval 2010 Task 1 dataset. In Table \ref{tab:semres}, the semi-CRF model with gold dependency features has a higher F-score while it is not significantly better than our \textsc{dgm} ($p=0.44$). 
+However, \textsc{dgm} performs worse when the predicted dependency is used as features since the percentages of entities representable in \textsc{dgm} is not as high as 99\% in the other dataset, and also the predicted dependency information affects our \textsc{dgm} model structures. Furthermore, if we do not use the dependency features, both \textsc{dgm} and semi-CRFs perform similarly, with p-values of $p=0.23$ and $p=0.33$ when using gold and predicted dependency structures for \textsc{dgm}, respectively. The Semi-CRF model achieves 74.5\% F-score while \textsc{dgm} (using gold dependency structures) achieves 74.8\% F-score with a much faster training time per iteration (inference time). The inference time of semi-CRFs on this dataset is 2.25 times more than the inference time of \textsc{dgm}. 
+%%mentioned about the percentage here as well.
+\begin{table*}[t!]
+	\centering
+	\resizebox{\columnwidth}{!}{
+		\begin{tabular}{lcllllllllllll}
+			\toprule
+			& \multirow{2}{*}{Dependency}& \multicolumn{3}{c}{Linear-chain CRFs}                                   & \multicolumn{3}{c}{Semi-Markov CRFs}                                   & \multicolumn{3}{c}{\textsc{dgm-s}}                                              & \multicolumn{3}{c}{\textsc{dgm}}                                              \\
+			& & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} \\ \midrule
+			\multirow{2}{*}{SemEval 2010}&Gold & 	75.8&	72.2&	73.9&77.3&73.8&\textbf{75.5}	&	76.1&	72.4&	74.2&	77.0&	73.0&	\textbf{75.0} \\
+			&Predicted & 	75.2&	71.1&	73.1&77.2&73.2&\textbf{75.1}	&	76.0&	72.2&	74.1&	76.4&	71.8&	74.1  \\
+			\bottomrule        
+			% check the t-test score tomorrow 75.1>74.1 p<0.01
+		\end{tabular}
+	}
+	\caption{Named Entity Recognition Results on the SemEval 2010 Task 1 dataset. All the models in this table use the dependency information as features.}
+	\label{tab:semres}
+\end{table*}
+
+\begin{table*}[t!]
+	\centering
+	\resizebox{\columnwidth}{!}{
+		\begin{tabular}{lcllllllllllll}
+			\toprule
+			& \multirow{2}{*}{Dependency}& \multicolumn{3}{c}{Linear-chain CRFs}                                   & \multicolumn{3}{c}{Semi-Markov CRFs}                                   & \multicolumn{3}{c}{\textsc{dgm-s}}                                              & \multicolumn{3}{c}{\textsc{dgm}}                                              \\
+			& & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} \\ \midrule
+			\multirow{2}{*}{SemEval 2010}&Gold & 	\multirow{2}{*}{76.1}&	\multirow{2}{*}{71.2}&		\multirow{2}{*}{73.6}&\multirow{2}{*}{77.2}&\multirow{2}{*}{72.1}&\multirow{2}{*}{\textbf{74.5}	}&	77.1&	71.6&	74.3& 77.7  &	72.1& \textbf{74.8} \\ %%p=0.23
+			&Predicted & 	&	&	&&&	&	77.0&	71.2&	74.0&	77.3&	71.5&	\textbf{74.3}     %% 0.33  
+			\\\bottomrule 	  
+			% check the t-test score tomorrow 
+		\end{tabular}
+	}
+	\caption{Named Entity Recognition Results on the SemEval 2010 Task 1 dataset without dependency features. Note that \textsc{dgm-s} and \textsc{dgm} still utilize the dependency information to build the models.}
+	\label{tab:semnodepres}
+\end{table*}
+
+
+
+
+\subsection{Full Results with Precision, Recall and F-score}
+This section presents the full results with precision, recall and F-score of all models in the paper. 
+Table \ref{tab:nerresult} and Table \ref{tab:prednerresult} show the results with dependency features while Table \ref{tab:nerresultnodep} and Table \ref{tab:prednerresultnodep} show the results without dependency features. 
+Recall that our \textsc{dgm-s} and \textsc{dgm} models use the dependency structure information to build the models even if we don't use the dependency features. 
+
+%Table \ref{tab:nerresult} shows the performance of using gold dependency structured information in \textsc{dgm-s} and \textsc{dgm}. Overall, \textsc{dgm} significantly outperforms semi-CRFs in F-score with $p<0.0001$. 
+%\textsc{dgm} has a lower F-score in NBC dataset but with $p=0.26$, which indicates semi-CRFs is not significantly better than \textsc{dgm}. 
+%The performance of \textsc{dgm-s} and \textsc{dgm} using the predicted dependency structured information is shown in Table \ref{tab:prednerresult}. Compared to overall \textsc{dgm} result in Table \ref{tab:nerresult}, the performance of \textsc{dgm} using predicted dependency structure drops 1.1\% and it's not significantly better than CRFs though having a higher F-score. 
+\begin{table*}[h!]
+	\centering
+	\scalebox{0.8}{
+		\begin{tabular}{lllllllllllll}
+			\toprule
+			
+			& \multicolumn{3}{c}{Linear-chain CRFs}                                   & \multicolumn{3}{c}{Semi-Markov CRFs}                                   & \multicolumn{3}{c}{\textsc{dgm-s}}                                              & \multicolumn{3}{c}{\textsc{dgm}}                                              \\
+			& \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} \\ \midrule
+			ABC& 	71.5&	68.9&	70.2&	71.7&	72.2&	\textbf{71.9}&	71.3&	71.5&	71.4&	72.2&	72.4&	\textbf{72.3}\\
+			CNN&	76.7&	75.1&	75.9&	78.3&	78.2&	\textbf{78.2}&	77.2&	76.9&	77.0&	78.7&	78.6&	\textbf{78.6}\\
+			MNB&	80.8&	71.2&	75.7&	77.4&	72.2&	\textbf{74.7}&	76.5&	70.5&	73.4&	78.8&	73.9&	\textbf{76.3}\\
+			NBC&	69.0&	63.0&	65.9&	70.7&	68.2&\textbf{69.4}&	70.3&	66.7&	68.4&	70.3&	69.1&	\textbf{69.7}\\
+			P2.5&	73.2&	68.6&	70.8&	75.0&	72.0&	73.5&	74.7&	70.9&	72.8&	76.7&	74.4&	\textbf{75.5}\\
+			PRI&	83.9&	82.6&	83.2&	84.7&	85.5&	\textbf{85.1}&	84.8&	85.4&	\textbf{85.1}&	85.1&	85.9&	\textbf{85.5}\\
+			VOA&	85.7&	83.5&	84.6&	85.6&	85.2&	85.4&	85.2&	85.1&	85.2&	87.1&	86.4&	\textbf{86.8}\\
+			Overall&79.2&	76.5&	77.8&	79.9&	79.3&	79.6&	79.5&	78.6&	79.0&	80.8&	80.2&	\textbf{80.5}            \\
+			\bottomrule   
+		\end{tabular}
+	}
+	
+	\caption{Named Entity Recognition Results on the Broadcast News corpus of OntoNotes 5.0 dataset. All the models in this table are using the gold dependency information. Both \textsc{dgm-s} and \textsc{dgm} models apply the dependency information in two ways: building the model and as well as using them as features.}
+	\label{tab:nerresult}
+\end{table*}
+
+\begin{table*}[h!]
+	\centering
+	\scalebox{0.8}{
+		
+		\begin{tabular}{lllllllllllll}
+			\toprule
+			& \multicolumn{3}{c}{Linear-chain CRFs}                                   & \multicolumn{3}{c}{Semi-Markov CRFs}                                   & \multicolumn{3}{c}{\textsc{dgm-s}}                                              & \multicolumn{3}{c}{\textsc{dgm}}                                              \\
+			& \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} \\ \midrule
+			ABC&	70.1&	66.7&	68.4&	71.4&	71.7&	\textbf{71.6}&	70.6&	70.6&	70.6&	71.8&	72.0&	\textbf{71.9}\\
+			CNN&	76.3&	74.5&	75.4&	78.0&	78.1&	\textbf{78.0}&	76.7&	76.1&	76.4&	77.6&	77.6&	\textbf{77.6}\\
+			MNB&	78.6&	70.6&	74.4&	76.2&	71.0&	73.5&	76.5&	70.5&	73.4&	77.7&	73.3&	\textbf{75.4}\\
+			NBC&	69.6&	63.3&	66.3&	72.5&	70.6&	\textbf{71.5}&	70.2&	67.3&	68.7&	72.0&	70.9&	\textbf{71.4}\\
+			P2.5&	73.4&	68.3&	70.8&	75.2&	72.3&	\textbf{73.7}&	73.2&	69.6&	71.3&	74.7&	73.2&	\textbf{73.9}\\
+			PRI&	83.9&	82.7&	83.3&	84.2&	85.0&	\textbf{84.6}&	83.7&	84.0&	\textbf{83.9}&	83.7&	84.7&	\textbf{84.2}\\
+			VOA&	84.8&	82.7&	83.7&	85.4&	85.2&	\textbf{85.3}&	84.7&	84.0&	84.4&	85.3&	84.8&	\textbf{85.1}\\
+			Overall&78.8&	75.9&	77.3&	79.8&	79.3&	\textbf{79.5}&	78.8&	77.6&	78.2&	79.6&	79.2&	\textbf{79.4}    \\
+			\bottomrule           
+		\end{tabular}
+	}
+	
+	\caption{Named Entity Recognition Results on the Broadcast News corpus of OntoNotes 5.0 dataset. All the models in this table are using the predicted dependency information from MaltParser.}
+	\label{tab:prednerresult}
+\end{table*}
+
+\begin{table*}[h!]
+	\centering
+	\scalebox{0.8}{
+		\begin{tabular}{lllllllllllll}
+			\toprule
+			& \multicolumn{3}{c}{Linear-chain CRFs}                                   & \multicolumn{3}{c}{Semi-Markov CRFs}                                   & \multicolumn{3}{c}{\textsc{dgm-s}}                                              & \multicolumn{3}{c}{\textsc{dgm}}                                              \\
+			& \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} \\ \midrule
+			ABC&	67.8&	65.3&	66.5&	72.2&	72.4&	\textbf{72.3}&	69.8&	69.0&	69.4&	72.5&	72.9&	\textbf{72.7}\\
+			CNN&	75.0&	73.3&	74.1&	76.7&	76.4&	76.6&	76.5&	75.7&	76.1&	77.4&	77.0&	\textbf{77.2}\\
+			MNB&	77.6&	72.3&	74.9&	76.8&	73.3&	\textbf{75.0}&	76.5&	70.5&	73.4&	77.8&	73.9&	\textbf{75.8}\\
+			NBC&	67.3&	63.6&	65.4&	69.8&	68.8&	\textbf{69.3}&	70.1&	66.1&	68.0&	68.5&	68.5&	\textbf{68.5}\\
+			P2.5&	73.4&	68.3&	70.8&	75.2&	72.3&	73.7&	76.4&	69.0&	72.5&	77.8&	75.7&	\textbf{76.8}\\
+			PRI&	83.6&	82.2&	82.9&	83.9&	84.3&	84.1&	85.0&	85.4&	85.2&	85.9&	86.5&	\textbf{86.2}\\
+			VOA&	83.2&	81.4&	82.3&	83.5&	83.0&	83.3&	85.5&	84.7&	85.1&	86.1&	84.9&	\textbf{85.5}\\
+			Overall&77.5&	75.1&	76.3&	78.8&	78.1&	78.5&	79.5&	77.6&	78.6&	80.3&	79.6&	\textbf{79.9} \\\bottomrule             
+		\end{tabular}
+	}
+	
+	\caption{NER results of all models without dependency features. Note that \textsc{dgm-s} and \textsc{dgm} are using the gold dependency structures in their models.}
+	\label{tab:nerresultnodep}
+\end{table*}
+
+\begin{table*}[h!]
+	\centering
+	\scalebox{0.8}{
+		\begin{tabular}{lllllllllllll}
+			\toprule
+			& \multicolumn{3}{c}{Linear-chain CRFs}                                   & \multicolumn{3}{c}{Semi-Markov CRFs}                                   & \multicolumn{3}{c}{\textsc{dgm-s}}                                              & \multicolumn{3}{c}{\textsc{dgm}}                                              \\
+			& \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} & \multicolumn{1}{c}{\em P} & \multicolumn{1}{c}{\em R} & \multicolumn{1}{c}{\em F} \\ \midrule
+			ABC&	67.8&	65.3&	66.5&	72.2&	72.4&	\textbf{72.3}&	69.4&	68.8&	69.1&	71.2&	71.5&	71.3\\
+			CNN&	75.0&	73.3&	74.1&	76.7&	76.4&	\textbf{76.6}&	76.1&	75.2&	75.6&	76.4&	76.0&	\textbf{76.2}\\
+			MNB&	77.6&	72.3&	74.9&	76.8&	73.3&	\textbf{75.0}&	77.5&	70.5&	73.8&	78.7&	73.3&	\textbf{75.9}\\
+			NBC&	67.3&	63.6&	65.4&	69.8&	68.8&	\textbf{69.3}& 69.3&	65.2&	67.2&	68.8&	68.8&	\textbf{68.8}\\
+			P2.5&	73.4&	68.3&	70.8&	75.2&	72.3&	\textbf{73.7}&	75.7&	68.7&	72.0&	75.3&	73.8&	\textbf{74.6}\\
+			PRI&	83.6&	82.2&	82.9&	83.9&	84.3&	84.1&	84.3&	84.7&	84.5&	84.8&	85.4&	\textbf{85.1}\\
+			VOA&	83.2&	81.4&	82.3&	83.5&	83.0&	83.3&	84.7&	83.7& \textbf{84.2}&	84.9&	83.7&	\textbf{84.3}\\
+			Overall&77.5&	75.1&	76.3&	78.8&	78.1&	\textbf{78.5}&	78.9&	77.0&	78.0&	79.1&	78.5&	\textbf{78.8} \\
+			\bottomrule
+		\end{tabular}
+	}
+	
+	\caption{NER Results of all models without dependency features. Note that \textsc{dgm-s} and \textsc{dgm} are using the predicted dependency structures in their models.}
+	\label{tab:prednerresultnodep}
+\end{table*}
+
+
+\section{Conclusion}
+We proposed a novel efficient dependency-guided model for named entity recognition.
+Motivated by the fact that named entities are typically covered by dependency arcs, presenting internal structures, we built a model that is able to explicitly exploit global structured information conveyed by dependency trees for NER.
+We showed that the model theoretically is better than the semi-Markov CRFs model in terms of time complexity.
+Experiments show that our model performs competitively with the semi-Markov CRFs model, even though it requires substantially less running time. 
+Our further research direction in next chapter investigate the structural relations between dependency trees and named entities. 
+%and working towards building integrated models that perform joint prediction of both structures.
+
+
+

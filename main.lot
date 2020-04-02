@@ -1,0 +1,46 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\babel@toc {english}{}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces The average number of possible edges involved in each token when we construct the model. \relax }}{20}{table.caption.70}
+\contentsline {table}{\numberline {3.2}{\ignorespaces The features for the example sentence in the linear-chain CRFs model.\relax }}{22}{table.caption.79}
+\contentsline {table}{\numberline {3.3}{\ignorespaces The features for the example sentence in the semi-CRFs model.\relax }}{22}{table.caption.80}
+\contentsline {table}{\numberline {3.4}{\ignorespaces Dataset statistics. \relax }}{23}{table.caption.82}
+\contentsline {table}{\numberline {3.5}{\ignorespaces Dataset Statistics. The number of sentences and entities in the Broadcast News corpus of OntoNotes 5.0 dataset. \relax }}{23}{table.caption.84}
+\contentsline {table}{\numberline {3.6}{\ignorespaces NER results for all models, when given and predicted dependency trees are used and dependency features are used. Best values and the values which are not significantly different in 95\% confidence interval are put in bold.\relax }}{24}{table.caption.87}
+\contentsline {table}{\numberline {3.7}{\ignorespaces NER results for all models, when given and predicted dependency trees are used but dependency features are not used. Best values and the values which are not significantly different in 95\% confidence interval are put in bold.\relax }}{25}{table.caption.88}
+\contentsline {table}{\numberline {3.8}{\ignorespaces Named Entity Recognition Results on the SemEval 2010 Task 1 dataset. All the models in this table use the dependency information as features.\relax }}{27}{table.caption.95}
+\contentsline {table}{\numberline {3.9}{\ignorespaces Named Entity Recognition Results on the SemEval 2010 Task 1 dataset without dependency features. Note that \textsc {dgm-s} and \textsc {dgm} still utilize the dependency information to build the models.\relax }}{27}{table.caption.96}
+\contentsline {table}{\numberline {3.10}{\ignorespaces Named Entity Recognition Results on the Broadcast News corpus of OntoNotes 5.0 dataset. All the models in this table are using the gold dependency information. Both \textsc {dgm-s} and \textsc {dgm} models apply the dependency information in two ways: building the model and as well as using them as features.\relax }}{28}{table.caption.98}
+\contentsline {table}{\numberline {3.11}{\ignorespaces Named Entity Recognition Results on the Broadcast News corpus of OntoNotes 5.0 dataset. All the models in this table are using the predicted dependency information from MaltParser.\relax }}{28}{table.caption.99}
+\contentsline {table}{\numberline {3.12}{\ignorespaces NER results of all models without dependency features. Note that \textsc {dgm-s} and \textsc {dgm} are using the gold dependency structures in their models.\relax }}{28}{table.caption.100}
+\contentsline {table}{\numberline {3.13}{\ignorespaces NER Results of all models without dependency features. Note that \textsc {dgm-s} and \textsc {dgm} are using the predicted dependency structures in their models.\relax }}{29}{table.caption.101}
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces List of interaction functions.\relax }}{34}{table.caption.120}
+\contentsline {table}{\numberline {4.2}{\ignorespaces Dataset statistics. ``ST'' is the ratio of entities that form subtrees. ``GD'' is the ratio of entities that have grandchild dependencies within their subtrees.\relax }}{35}{table.caption.125}
+\contentsline {table}{\numberline {4.3}{\ignorespaces Performance comparison on the OntoNotes 5.0 English dataset.\relax }}{39}{table.caption.141}
+\contentsline {table}{\numberline {4.4}{\ignorespaces Performance comparison on the OntoNotes 5.0 Chinese Dataset.\relax }}{40}{table.caption.142}
+\contentsline {table}{\numberline {4.5}{\ignorespaces Results on the SemEval-2010 Task 1 datasets.\relax }}{41}{table.caption.144}
+\contentsline {table}{\numberline {4.6}{\ignorespaces Performance on the CoNLL-2003 English dataset.\relax }}{42}{table.caption.150}
+\contentsline {table}{\numberline {4.7}{\ignorespaces Low-resource NER performance on the SemEval-2010 Task 1 datasets.\relax }}{43}{table.caption.152}
+\contentsline {table}{\numberline {4.8}{\ignorespaces F$_1$ performance of DGLSTM-CRF with predicted dependencies against the best performing BiLSTM-CRF. $\dagger $: LAS is label attachment score which is the metric for dependency evaluation.\relax }}{43}{table.caption.154}
+\contentsline {table}{\numberline {4.9}{\ignorespaces Ablation study of the DGLSTM-CRF model on the OntoNotes English dataset.\relax }}{44}{table.caption.156}
+\contentsline {table}{\numberline {4.10}{\ignorespaces Performance of entities with different lengths on the four datasets: OntoNotes (English), OntoNotes Chinese, Catalan and Spanish.\relax }}{45}{table.caption.161}
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {5.1}{\ignorespaces Data statistics for the datasets.\relax }}{53}{table.caption.193}
+\contentsline {table}{\numberline {5.2}{\ignorespaces The entity information for the Taobao dataset. \relax }}{54}{table.caption.194}
+\contentsline {table}{\numberline {5.3}{\ignorespaces The entity information for the Youku dataset. \relax }}{54}{table.caption.195}
+\contentsline {table}{\numberline {5.4}{\ignorespaces Performance comparison between different baseline models and our approaches on 4 datasets with $\rho = 0.5$ (for {\it Complete} model, $\rho =1.0$).\relax }}{57}{table.caption.208}
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {6.1}{\ignorespaces List of dependency patterns.\relax }}{65}{table.caption.228}
+\contentsline {table}{\numberline {6.2}{\ignorespaces Features for the example in Figure \ref {fig:dhtexample}. \relax }}{70}{table.caption.244}
+\contentsline {table}{\numberline {6.3}{\ignorespaces Performance comparison with state-of-the-art models on GeoQuery dataset. ($\dagger $ represents the system is using lambda-calculus expressions as meaning representations.)\relax }}{72}{table.caption.255}
+\contentsline {table}{\numberline {6.4}{\ignorespaces Performance comparison with state-of-the-art models on GeoQuery dataset. ($\dagger $ represents the system is using lambda-calculus expressions as meaning representations.)\relax }}{72}{table.caption.256}
+\contentsline {table}{\numberline {6.5}{\ignorespaces Different types of errors in the prediction of {\em relaxed hybrid tree} model. \relax }}{72}{table.caption.257}
+\contentsline {table}{\numberline {6.6}{\ignorespaces $F_1$ scores of our model with different dependency features.\relax }}{74}{table.caption.260}
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {7.1}{\ignorespaces Derivation rule for the typed spans. Derivation for other entity types like GPE are same as \textit {person}. They are not shown in the table due to space limit.\relax }}{78}{table.caption.270}
+\contentsline {table}{\numberline {7.2}{\ignorespaces Dataset Statistics. The total number of entities and the number of ``invalid'' entities in training and testing data. ``Invalid`` entities are the special case describe in Section \ref {sec:sepcialcase}.\relax }}{81}{table.caption.283}
+\contentsline {table}{\numberline {7.3}{\ignorespaces Named Entity Recognition Results on SemEval 2010 dataset with both dependency and named entity information annotated. \relax }}{81}{table.caption.285}
+\addvspace {10\p@ }

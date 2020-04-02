@@ -1,0 +1,46 @@
+\chapter{Conclusions} % Main chapter title
+
+\label{Chapter8}
+
+
+
+In this thesis, we leverage the potential of dependency trees in structured prediction tasks. 
+In particular, we focus on the semantically meaningful tasks: named entity recognition and semantic parsing. 
+
+We first present our observations from the datasets that have both named entity and dependency parse tree annotations.
+Our observations suggest that most of the entities (about 99\%) in the datasets, including datasets in other languages, form contiguous subtrees in the dependency trees~\cite{jie2017efficient}. 
+On the other hand, we also statistically show that certain entity types have strong correlations with some specific dependency relations~\cite{jie2019dependency}, which could be strong indicators for the existence of named entities.
+
+Inspired by the first observation, we build an efficient dependency-guided model~\cite{jie2017efficient} based on the semi-Markov CRF~\cite{sarawagi2004semi} for named entity recognition. 
+Making use of the ``\textit{subtree}'' properties, we can define certain constraints to eliminate the search space for entity candidates. 
+Specifically, we can disallow some \textit{invalid} spans to become entities. 
+Theoretically, we prove that our dependency-guided model achieves a linear-time complexity on average while having comparable or even better performance compared with the semi-Markov CRF model on the OntoNotes Broadcast News dataset. 
+
+
+As our first approach did not fully make use of the complete dependency structures and dependency relations, we further investigate a deeper relationship between the dependency trees and named entities. 
+First, the \textit{long-distance} interactions within the entity boundary are able to help us identify those long entities because such interactions \textit{shorten} the path from the entity left boundary to the right boundary. 
+Secondly, the \textit{long-distance} interactions cross the entity boundary are able to help us identify the direct connection between the entity head word and the word outside entity.
+Thirdly, certain entity types have strong correlations with some specific dependency relations. 
+According to these properties, we propose a dependency-guided LSTM-CRF model~\cite{jie2019dependency} to capture these properties.
+Empirically, the dependency-guided LSTM-CRF model achieves state-of-the-art performance on the datasets with four languages. 
+Through the detailed analysis, we demonstrate that the proposed model indeed captures the properties above. 
+
+We further present a scenario where annotations are incomplete for named entity recognition and discuss the possibility to solve the problem with a dependency-based solution.
+We first argue that the current incomplete annotation scenarios are not realistic and the \textsc{o} labels should not be assumed to be available. 
+This practical scenario makes the commonly used approaches such as marginal CRF~\cite{greenberg2018marginal} suffer from ``\textit{low precision and high recall}'' problem. 
+We then propose an iterative training approach to address this problem and such an approach achieves much better performance compared with the strong baselines.
+We also discuss the possibility of using dependency trees to help us identify those non-entity words based on the relationships mentioned above. 
+
+
+Finally, we attempt to solve the semantic parsing task without explicit dependency annotations but regarding the dependency trees as a latent variable. 
+Motivated by previous approaches~\cite{reddy2016transforming,wang2015building} which transform the dependency trees into meaning representations (\textit{e.g.}, lambda-calculus expression and AMR), we presented a dependency-based hybrid tree representation to jointly encode tree-structured FunQL and the natural language words. 
+Such a representation is flexible in terms of word order. 
+Empirically, the experimental results show the proposed hybrid tree model achieves state-of-the-art performance on 7 out of 8 languages and the improvement is significant. 
+Our further analysis found that our model consistently has promising results because the proposed dependency-based representation can capture the difference of word order in different languages. 
+
+We pose some research challenges in Chapter \ref{Chapter7} for our future research purpose. 
+The challenges including a joint task for dependency parsing and NER, a task that using dependency as guidance to design a graphical model, and a universal dependency-based hybrid tree framework for different types of meaning representation in semantic parsing. 
+
+
+
+

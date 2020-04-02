@@ -1,0 +1,227 @@
+% Chapter Template
+
+\chapter{Background: Named Entity Recognition and Semantic Parsing} % Main chapter title
+
+\label{Chapter2} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
+
+%----------------------------------------------------------------------------------------
+%	SECTION 1
+%----------------------------------------------------------------------------------------
+
+This chapter introduces the background knowledge of two structured prediction tasks: named entity recognition~\cite{yadav2018survey,li2018survey} and semantic parsing~\cite{kamath2018survey}.
+Besides, we present the common approaches to some of the research challenges in these two fields. 
+
+
+\section{Named Entity Recognition}
+
+%\section{Dependency-Guided Named Entity Recognition}
+Named entity recognition is one of the most fundamental tasks in NLP. 
+The task aims to identify the named entities in unstructured text into predefined categories~\cite{grishman1996message} such as person names, organization, locations, quantities, etc. 
+One standard approach to NER is to regard the problem as a sequence labeling problem, where each word is assigned a tag, indicating whether the word belongs to part of any named entity or appears outside of all entities. 
+More specifically, \citet{ratinov2009design} designed different tagging schemes to fully encode different properties of the entity tags.
+
+NER is an important step for many downstream tasks or applications such as relation extraction, question answering, semantic parsing, etc.
+The goal of relation extraction is to predict a relation between a pair of entities in a sentence or document. 
+A number of research~\citet{miwa2016end,xu2016improved} has been using the dependency trees to explicitly encode relation representations for pairs of entities.
+\citet{dong2016language,dong2018coarse} proposed end-to-end neural models with pre-processed named entities for the semantic parsing tasks. 
+Besides, as named entities are semantically meaningful, 
+
+\subsection{Resources}
+To date, there are some benchmark datasets (especially for English) and well-known tools for NER. 
+We summarize the commonly-used resources in the research community. 
+The CoNLL-2003~\cite{tjong2003introduction} datasets contains the English portion taken from the Reuters news stories\footnote{http://www.reuters.com/researchandstandards/} between August 1996 and August 1997, and the German data taken from the ECI Multilingual Text Corpus with articles written at the end of August 1992. 
+The datasets are pre-processed with automatic tokenization, part-of-speech tagging and chunking with existing models. 
+Entities are annotated by several annotators. 
+Similar to the CoNLL-2003 datasets, the CoNLL-2002~\cite{tjong2002introduction} contains the portion of Spanish and Dutch languages. 
+These datasets have been benchmark datasets to evaluate recent feature-based~\cite{ling2012fine,finkel2005incorporating} and neural models~\cite{collobert2011torch7,chiu2016named,lample2016neural,ma2016end,peters2018deep,devlin2019bert} so far. 
+
+\citet{pradhan2012conll,pradhan2013towards} further proposed a much larger dataset, OntoNotes 5.0 for the CoNLL-2012 shared task\footnote{http://conll.cemantix.org/2012/data.html}. 
+The task is originally crafted for coreference resolution in multiple languages. 
+As it provides the named entity annotations, we can use it to evaluate the current NER models. 
+The evaluation is more reliable as the dataset contain a much larger volume of data and more entity types to evaluate a model's effectiveness and robustness. 
+Recent research works~\cite{li2017leveraging,ghaddar2018robust,jie2019dependency,liu2019towards} also evaluate their models on this dataset.
+
+Among the existing NER systems, Stanford NER~\cite{finkel2005incorporating}\footnote{https://nlp.stanford.edu/software/CRF-NER.shtml} and Spacy\footnote{https://spacy.io/} are the most popular tools in NLP. 
+Another one that has a pretty nice demonstration is the AllenNLP package\footnote{https://allennlp.org/}. 
+They implemented the state-of-the-art NER models with the ELMo contextualized representations~\cite{peters2018deep}.
+
+\subsection{Approaches}
+The approaches for sequence labeling, or specifically NER can be largely categorized into feature-based and neural-based models.
+\paragraph{Feature-based Approaches}
+Previous approaches used sequence labeling models such as hidden Markov models (HMMs)~\cite{zhou2002named}, maximum entropy Markov models (MEMMs)~\cite{mccallum2000maximum}, as well as linear-chain~\cite{finkel2005incorporating} and semi-Markov conditional random fields (CRFs/semi-CRFs)~\cite{sarawagi2004semi}. 
+These models are feature-based approaches that require us to design binary features.
+For example, the word and/or part-of-speech tag can be a good feature indicator for certain entities. 
+Also, the word shape and whether a word is capital contribute to the existence of the named entities. 
+Designing better features in a model results in better performance in NER~\cite{lin2009phrase,passos2014lexicon}. 
+Though we know some of the useful feature templates, it is not realistic for us to propose all useful features and these features are often sparse. 
+%\citet{muis2016weak} proposed a weak semi-CRFs model which has a lower complexity than the conventional semi-CRFs model while still having a higher complexity than the linear-chain CRFs model. 
+%Our model is proved to have the same time complexity as linear-chain CRFs model in the average case. 
+%To have a better performance, either adding more useful features or exploiting a more complex model is required. 
+\paragraph{Neural-based Approaches}
+While most research efforts exploited standard word-level features~\cite{ratinov2009design}, more sophisticated features such as word shape and part-of-speech tags can also be used~\cite{finkel2005incorporating}. 
+Instead of hand-crafted features, recent literature has been focusing on designing different neural architectures to obtain the feature representations by making use of the word embeddings~\cite{mikolov2013distributed} and contextualized representation~\cite{peters2018deep,devlin2019bert,akbik2018coling}. 
+Both the word embeddings and the contextualized representaiton~\cite{smith2019contextual} are trained on a large-scale corpus to obtain meaningful representations. 
+The prevalent neural architecture for NER is using bidirectional LSTM (BiLSTM)~\cite{hochreiter1997long} to encode the sentence as it is able to give us context representation. 
+\citet{chiu2016named,lample2016neural,ma2016end} applied the BiLSTM architecture to obtain significantly better performance compared to the feature-based approaches. 
+Afterward, contextualized representations such as ELMo~\cite{peters2018deep} and BERT~\cite{devlin2019bert} trained on the larger corpus further improved the performance on NER.
+Such improvements show that the contextualized representations contain even more useful information for the NER task.
+
+
+
+
+
+
+
+
+\subsection{Challenges}
+However, though these models have achieved state-of-the-art performance on standard English datasets, especially in the news domain with sufficient training data. 
+There exist many challenges for NER in other languages, other domains and other scenarios when training data is incomplete or insufficient. 
+Different languages have different properties in terms of grammar~\cite{chomsky1956three}, word order~\cite{greenberg1963some}, compositional structures, etc. 
+A number of ongoing research has been focusing on the incomplete annotation problem in NER. 
+\citet{yang2018distantly} showed the effectiveness of such a model on Chinese NER with incomplete annotations due to the fact that they required a certain number of fully annotated data to perform joint training. 
+\citet{greenberg2018marginal} applied this model on a biomedical NER task and achieved promising performance with incomplete annotations. 
+However, in their assumption for the incomplete annotations, the \textsc{O} labels are still considered, which we believe is not realistic. 
+%	achieved promising performance on the biomedical NER task with this model but {\color{red}their assumption largely reduces the number of {\it unavailable labels}}. 
+\citet{carlson2009learning} modified the structured perceptron algorithm and defined features only on the tokens with annotated labels in partially labeled sequences. 
+\citet{fernandes2011learning} and \citet{lou2012structured} proposed to use a large-margin learning framework similar to structured support vector machines with latent variables~\cite{yu2009learning}. 
+\citet{jie2019better} presented a practical scenario for NER with incomplete annotations where we should not assume the \textsc{o} label annotations are always available. 
+They solved the problems with an iteratively self-training approach.
+\citet{mayhew2019named} further presented an even more challenging setting and proposed a constrained binary learning method to learn the weights of a token being an \textsc{o} label. 
+Besides incomplete annotations, we also suffer from the problem of insufficient training data in the field of NER. 
+The common technique for this problem is to use transfer learning~\cite{pan2009survey,weiss2016survey} to transfer the model parameters trained on the source data with fruitful annotations to target data where training data is insufficient~\cite{yang2017transfer,lin2018neural}. 
+Such a technique also applies to the cross-domain scenario. For example, we can train an NER model on the news domain and fine-tune the model on the social media domain (e.g., Twitter dataset).
+
+
+%\citet{ling2012fine} showed that using syntactic-level features from dependency structures in a CRFs-based model can lead to improved NER performance.
+%Such dependency structures were also used in the work by \citet{liu2010recognizing},
+%where the authors utilized such structures for building a skip-chain variant of the original CRFs model.
+%This shows that some simple structured information conveyed by dependency trees can be exploited for improved NER. 
+%%Another more complex models like semi-CRFs \cite{sarawagi2004semi} is known to be generally better than linear-chain CRF though the complexity is higher. 
+%In their skip-chain CRFs model, they simply added certain dependency arcs as additional dependencies in the graphical model, resulting in loopy structures.
+%However, such a model did not explicitly explore the relation between entities and global structured information of the dependency trees.
+%The authors also showed that such a model does not outperform a simpler approach that adds additional dependencies between similar words only on top of the original CRFs model.
+%%
+%% they did not consider any entity information given the dependency structure but just simply adding the skip edges to produce more cliques in their graphical model. 
+%%	Moreover, they need to carefully link such skip edges since it may cause the inference their graphical model intractable. 
+%In this work, we also focus on utilizing dependency structures for improving NER.
+%Unlike previous approaches, we focus on exploiting the global structured information conveyed by dependency trees to improve the NER process. Comparing with the semi-CRFs model, our  model is not only able to perform competitively in terms of performance, but also more {\em efficient} in terms of running time.
+%
+%There are also some existing works that focus on improving the efficiency of NER and other information extraction models.
+%For example, \citet{okanohara2006improving} used a separate naive Bayes classifier to filter some entities during training and inference in their semi-CRFs based model.
+%While the filtering process was used to reduce the computational cost of the semi-CRFs model, the model still needs to enumerate all the possible chunks. 
+%\citet{yang2012extracting} extended the original semi-CRFs for extracting opinion expressions and used the constituency parse tree information to avoid constructing implausible segments. 
+%\citet{lu2015joint} proposed an efficient and scalable model using hypergraph which can handle overlapping entities. 
+%\citet{muis2016learning} extended the hypergraph representation to recognize both contiguous and discontiguous entities. 
+%
+%NER has been a long-standing task in the field of NLP. 
+%While many recent works~\cite{peters2018deep,akbik2018coling,devlin2019bert} focus on finding good contextualized word representations for improving NER, our work is mostly related to the literature that focuses on employing dependency trees for improving NER. 
+%
+%
+%\citet{sasano2008japanese} exploited the syntactic dependency features for Japanese NER and achieved improved performance with a support vector machine~(SVM)~\cite{cortes1995support} classifier. 
+%Similarly, \citet{ling2012fine} included the head word in a dependency edge as features for fine-grained entity recognition. 
+%Their approach is a pipeline where they extract the entity mentions with  linear-chain conditional random fields~(CRF)~\cite{lafferty2001conditional} and used a classifier to predict the entity type.
+%%then classify the mentions into multiple entity labels. 
+%\citet{liu2010recognizing} proposed to link the words that are associated with selected typed dependencies (e.g., ``{\it nn}'', ``{\it prep}'') using a skip-chain CRF~\cite{sutton2004collective} model. 
+%They showed that some specific relations between the words can be exploited for improved NER. 
+%%As the underlying model involves loopy structures, exact inference is not available. 
+%%As the underlying model involves loopy structures, they performed inexact inference.
+%\citet{cucchiarelli2001unsupervised} applied a dependency parser to obtain the syntactic relations for the purpose of unsupervised NER. 
+%The resulting relation information serves as the features for potential existence of named entities. 
+%\citet{jie2017efficient} proposed an efficient dependency-guided model based on the semi-Markov CRF~\cite{sarawagi2004semi} for NER. 
+%The purpose is to reduce time complexity while maintaining the non-Markovian features.
+%%in the model. 
+%% properties of semi-Markov CRF. 
+%They observed certain relationships between the dependency edges and the named entities. 
+%Such relationships are able to define a reduced search space for their model. 
+%While these previous approaches do not make full use of the dependency tree structures, we focus on exploring neural architectures to exploit the  complete structural information conveyed by the dependency trees.
+%% dependency trees including the dependency relations. 
+%
+%%Other than dependency trees, NER can also be benefited from other linguistics structures like parse trees, which are more expensive in terms of annotation costs compared to the dependency trees.  
+%%\citet{finkel2009joint} proposed a CRF-CFG model for joint parsing and named entity recognition. 
+%%Their model achieved competitive performance on the OntoNotes dataset~\cite{pradhan2013towards}. 
+%%\citet{li2017leveraging} applied the recursive neural network on top of the parse tree structures and obtained state-of-the-art performance on the OntoNotes dataset.
+
+
+
+\section{Semantic Parsing}
+Semantic parsing is a fundamental task within the field of natural language processing (NLP).
+Consider a natural language (NL) sentence and its corresponding meaning representation (MR) as illustrated in Figure \ref{fig:transformexample}.
+%Semantic parsing is the task of transforming the former to the latter  automatically.
+Semantic parsing aims to transform the natural language sentences into machine-interpretable meaning representations automatically. 
+The task has been popular for decades and keeps receiving significant attention from the NLP community. 
+Various systems~\cite{zelle1996learning,kate2005learning,zettlemoyer2005learning,liang11learning} were proposed over the years to deal with different types of semantic representations.
+Such models include structure-based models~\cite{wong2006learning,lu2008generative,kwiatkowski2010inducing,jones2012semantic}  and neural network based models~\cite{dong2016language,cheng2017learning}. 
+
+\subsection{Meaning Representations}
+The literature on semantic parsing has focused on various types of semantic formalisms. 
+The $\lambda$-calculus expressions~\cite{zettlemoyer2005learning} have been popular and widely used in semantic parsing tasks over recent years~\cite{dong2016language,gardner2017open,reddy2016transforming,reddy2017universal,susanto2017neural,cheng2017learning}. 
+Dependency-based compositional semantics (DCS)\footnote{Unlike ours, their work captures dependencies between  semantic units but not natural language words.} was introduced by \citet{liang11learning}, whose extension, $\lambda$-DCS, was later proposed by \citet{liang2013lambda}. 
+Various models~\cite{berant2013semantic,wang2015building,jia-liang:2016:P16-1}  on semantic parsing with the $\lambda$-DCS formalism were proposed. 
+Graph-based formalism is later proposed to represent rich and structured semantic of natural languages.
+For example, \citet{banarescu2013abstract} proposed the abstract meaning representation (AMR) to map the natural language words into the sense in Propbank~\cite{kingsbury2002treebank}.
+Structured query language (SQL)~\cite{P18-1033} has been popular in recent years. 
+Lots of research efforts have been focusing on building various SQL datasets~\cite{yu2018spider,zhong2017seq2sql} and models~\cite{lin2019grammar} to accelerate the research progress in this field. 
+In this work, we focus on the tree-structured semantic formalism which has been examined by various research efforts~\cite{wong2006learning,kate2006using,lu2008generative,kwiatkowski2010inducing,jones2012semantic,lu2014semantic,yan2018learn}.
+
+%-----------------------------------
+%	SUBSECTION 1
+%-----------------------------------
+%\subsection{Dependency-based Hybrid Trees for Semantic Parsing}
+
+\subsection{Approaches}
+We summarize recent approaches on lambda-calculus expressions, tree-structured semantics, AMR and SQL meaning representations in this section. 
+\paragraph{Lambda-calculus expressions}
+Similar to NER, early approaches~\cite{cai2013large,poon2013grounded,berant2014semantic,krishnamurthy2016probabilistic,krishnamurthy2017neural} are mostly feature-based or rule-based approaches. 
+For example, \citet{krishnamurthy2015learning} proposed a rule-based semantic parser containing three steps: CCG syntactic parsing, entity linking and semantic analysis which assigns a logical form to each word. 
+\citet{lu2011probabilistic,lu2014semantic} proposed the hybrid tree model for tree-structured logical forms. 
+Lately, \citet{dong2016language} first proposed to use the sequence-to-sequence neural model with attention for lambda-calculus expressions. 
+\citet{reddy2016transforming,reddy2017universal} proposed a linguistically motivated procedure to transform syntactic dependencies into logical forms. 
+
+\paragraph{Functional Query Logical Forms}
+
+\citet{wong2006learning} proposed the \textsc{Wasp} semantic parser 
+that regards the task as a phrase-based machine translation problem.
+%using statistical phrase-based machine translation approach by regarding the mapping natural language words to semantic representations as an alignment problem. 
+\citet{lu2008generative} proposed a generative process to generate natural language words and semantic units in a joint model. 
+The resulting representation is called \textit{hybrid tree} where both natural language words and semantics are encoded into a joint representation. 
+The \textsc{UBL}-s~\cite{kwiatkowski2010inducing} parser applied the CCG grammar~\cite{steedman1996surface} to model the joint representation of both semantic units and contiguous word sequences which do not overlap with one another. 
+\citet{jones2012semantic} applied a generative process with Bayesian tree transducer and their model also simultaneously generates the meaning representations and natural language words. 
+\citet{lu2014semantic,lu2015constrained} proposed a discriminative version of the hybrid tree model of \cite{lu2008generative} where richer features can be captured. 
+\citet{dong2016language} proposed a sequence-to-tree model using recurrent neural networks where the decoder can branch out to produce tree structures. 
+\citet{susanto2017semantic} augmented the discriminative {hybrid tree} model with a multilayer perceptron and achieved state-of-the-art performance. 
+
+
+\paragraph{Abstract Meaning Representations}
+Existing work focus on the datasets released by LDC\footnote{https://catalog.ldc.upenn.edu/LDC2020T02}. 
+\citet{flanigan2014discriminative} proposed the first graph-based system\footnote{http://github.com/jflanigan/jamr}  for automatic AMR parsing. 
+The core of their algorithm is to use a maximum spanning tree (MST) algorithm to construct the graph representation.  
+\citet{artzi2015broad} proposed a CCG parsing algorithm for AMR parsing.
+\citet{lyu2018amr} introduced a neural parser which treats alignments as latent variables within a joint probabilistic model. 
+\citet{wang2015transition}  proposed a two-stage framework that uses the transition-based algorithm to transforms the dependency tree into an AMR graph. 
+Afterward, there is a lot of research efforts in designing different transition-based systems in terms of transition actions and different neural encoders~\cite{wang2015boosting,wang2016camr,misra2016neural,damonte2017incremental,vilares2018transition}.
+With the thrive of sequence-to-sequence model for semantic parsing~\cite{dong2016language}, \citet{konstas2017neural} presented a novel training procedure  that can perform AMR generation and achieve competitive results.  
+As a rich semantic meaning representation, it can benefit some downstream applications such as machine reading comprehension~\cite{sachan2016machine} and text generation~\cite{song2016amr}.
+
+
+\paragraph{SQL}
+
+The task of translating natural-language-questions-to-SQL (NLQ2SQL) queries is commonly tackled using semantic parsing approaches, which aim at parsing natural language to a structured logic form. 
+%This task has received significant attention in the research community.  
+%Various neural models including sequence models~\cite{dong2016language,zhong2017seq2sql,wang2018pointing} and structured neural models~\cite{xu2017sqlnet,dong2018coarse,yu2018syntaxsqlnet} were developed to tackle this tasks. 
+%While these models obtain state-of-the-art performance in the standard WikiSQL dataset, their table-aware assumption might not be applicable to practical scenario. 
+The NLQ2SQL task has mostly been formulated as a slot-filling problem that leverages the unique structure of SQL query. 
+% \citeauthor{zhong2017seq2sql}~(\citeyear{zhong2017seq2sql}) solved the NLQ2SQL problem with a deep neural network based framework and proposed the Seq2SQL method to prune the output space of the target query by leveraging the SQL structures.  
+\citet{zhong2017seq2sql} proposed the Seq2SQL method to prune the output space of the target query by leveraging the SQL structures. 
+\citet{xu2017sqlnet} proposed the SQLNet to tackled the ``order-matter'' problem in condition generation by using a sketch-based approach.
+% instead of the sequence-to-sequence based method. 
+\citet{dong2018coarse}proposed a two-stage method \textsc{Coarse2Fine} to first generate a sketch of the meaning of the given question and then fill in missing details based on both the natural language input and the sketch.
+\citet{yu2018typesql} further improved SQLNet to TypeSQL by capturing the rare entities and numbers in natural language questions and utilizing the type information. 
+
+A number of researchers also began to address the NLQ2SQL task by directly generating the targeted SQL queries using sequence-to-sequence (Seq2Seq) based methods~\cite{dong2016language,sutskever2014sequence,wang2018pointing}, which first encode the natural language questions as the vector representations and then decode the encoded vectors into the corresponding SQL queries.
+ Several related approaches~\cite{wang2018pointing} are developed to predict the SQL queries by copying a token from the source question using a copy mechanism. 
+The NLQ2SQL task has also been solved in a unified framework for ten different natural language processing tasks~\cite{mccann2018natural}. In order to effectively solve the NLQ2SQL task, the table schema~\cite{wang2018pointing,lukovnikov2018translating} or executed query answers against the database~\cite{pasupat2015compositional,yih2015semantic,yin2015neural} are able to provide indirectly information to guide the SQL query generation tasks. 
+%There are also some other works that perform the questions-answering on tables by directly identifying the targeted table cells corresponding to the answers~\cite{cafarella2008webtables,das2012finding,pimplikar2012answering,sun2016table}.
+%Moreover, the NLQ2SQL tasks are also attracted considerable attention in healthcare domain~\cite{roberts2017semantic,ben2012medical} in order to assist doctors with their clinical decision. 
+
+
+

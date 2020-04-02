@@ -1,0 +1,538 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SUTD Masters/Doctoral Thesis
+% LaTeX Template
+% Version 1.0 (29/08/16)
+%
+% Adapted to SUTD requirements by Martin Ochoa
+%
+% This template is based on a template downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Version 2.x major modifications by:
+% Vel (vel@latextemplates.com)
+%
+% which in turn was based on a template by:
+% Steve Gunn (http://users.ecs.soton.ac.uk/srg/softwaretools/document/templates/)
+% Sunil Patel (http://www.sunilpatel.co.uk/thesis-template/)
+%
+%
+% Template license:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+
+%----------------------------------------------------------------------------------------
+
+\documentclass[
+11pt, % The default document font size, options: 10pt, 11pt, 12pt
+oneside, % Two side (alternating margins) for binding by default, uncomment to switch to one side
+english, % ngerman for German
+singlespacing, % Single line spacing, alternatives: onehalfspacing or doublespacing, singlespacing
+%draft, % Uncomment to enable draft mode (no pictures, no links, overfull hboxes indicated)
+%nolistspacing, % If the document is onehalfspacing or doublespacing, uncomment this to set spacing in lists to single
+%liststotoc, % Uncomment to add the list of figures/tables/etc to the table of contents
+%toctotoc, % Uncomment to add the main table of contents to the table of contents
+%parskip, % Uncomment to add space between paragraphs
+%nohyperref, % Uncomment to not load the hyperref package
+headsepline, % Uncomment to get a line under the header
+]{MastersDoctoralThesis} % The class file specifying the document structure
+
+\usepackage[utf8]{inputenc} % Required for inputting international characters
+\usepackage[T1]{fontenc} % Output font encoding for international characters
+
+\usepackage{palatino} % Use the Palatino font by default
+
+\usepackage[backend=bibtex,style=authoryear,natbib=true]{biblatex} % User the bibtex backend with the authoryear citation style (which resembles APA)
+
+\addbibresource{example.bib} % The filename of the bibliography
+\addbibresource{dgner.bib}
+\addbibresource{depner.bib}
+\addbibresource{dht.bib}
+\addbibresource{incomp.bib}
+\addbibresource{sql.bib}
+
+\usepackage[autostyle=true]{csquotes} % Required to generate language-dependent quotes in the bibliography
+
+\usepackage{color}
+
+%----------------------------------------------------------------------------------------
+%	MARGIN SETTINGS
+%----------------------------------------------------------------------------------------
+
+\geometry{
+	paper=a4paper, % Change to letterpaper for US letter
+	inner=2.54cm, % Inner margin
+	outer=2.8cm, % Outer margin
+	bindingoffset=1cm, % Binding offset
+	top=2.5cm, % Top margin
+	bottom=2.5cm, % Bottom margin
+	%showframe,% show how the type block is set on the page
+}
+
+%----------------------------------------------------------------------------------------
+%	THESIS INFORMATION
+%----------------------------------------------------------------------------------------
+
+\thesistitle{Leveraging Dependency Trees for Structured Prediction} % Your thesis title, this is used in the title and abstract, print it elsewhere with \ttitle
+%Exploiting the Potential of Dependency Structures
+\supervisor{Prof. Wei \textsc{Lu}} % Your supervisor's name, this is used in the title page, print it elsewhere with \supname
+\examiner{} % Your examiner's name, this is not currently used anywhere in the template, print it elsewhere with \examname
+\degree{Doctor of Philosophy} % Your degree name, this is used in the title page and abstract, print it elsewhere with \degreename
+\author{Zhanming \textsc{Jie}} % Your name, this is used in the title page and abstract, print it elsewhere with \authorname
+\addresses{} % Your address, this is not currently used anywhere in the template, print it elsewhere with \addressname
+\university	{SUTD}
+\keywords{} % Keywords for your thesis, this is not currently used anywhere in the template, print it elsewhere with \keywordnames
+\pillar{Information Systems Technology and Design} % Pillar
+
+\hypersetup{pdftitle=\ttitle} % Set the PDF's title to your title
+\hypersetup{pdfauthor=\authorname} % Set the PDF's author to your name
+\hypersetup{pdfkeywords=\keywordnames} % Set the PDF's keywords to your keywords
+
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{adjustbox}
+
+\usepackage{graphicx}  %Required
+\usepackage{amsfonts}
+\usepackage{subcaption}
+
+\renewcommand{\vec}[1]{\mathbf{#1}} %make vector symbol bold
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+%\DeclareMathOperator*{\len}{len}
+\usepackage{footnote}
+\usepackage{epstopdf}
+\usepackage{algorithm} %algorithm package
+\usepackage{algpseudocode} %algorithm
+\usepackage{stmaryrd}
+\usepackage{booktabs,arydshln}
+\usepackage{mathtools}
+
+\usepackage{color}
+\usepackage{tikz}
+\usepackage{pgf}
+\usepackage{pgfplots}
+\usepackage{tikz-qtree}
+\usetikzlibrary{arrows,decorations.pathmorphing,backgrounds,positioning,fit,petri,shapes.misc, arrows.meta,shapes.geometric,decorations.markings,calc,shadows.blur,decorations.pathreplacing,quotes,matrix,shapes.symbols}
+\tikzset{->-/.style={decoration={
+			markings,
+			mark=at position 0.5 with {\arrow{>}}},postaction={decorate}}}
+\tikzset{->--/.style={decoration={
+			markings,
+			mark=at position 0.4 with {\arrow{>}}},postaction={decorate}}}
+
+\definecolor{fontgray}{RGB}{44, 62, 80}
+\definecolor{myred}{RGB}{235, 47, 6} %rgb()
+\definecolor{summertime}{RGB}{245, 205, 121}
+\definecolor{darkgrass}{RGB}{0, 148, 50}
+\definecolor{myblue}{RGB}{0, 168, 255}
+\definecolor{mygray}{RGB}{158, 158, 158}
+\definecolor{puffin}{RGB}{250, 152, 58}
+\definecolor{lowpurple}{RGB}{210, 180, 222}
+\definecolor{lowblue}{RGB}{102,178,255}
+\definecolor{lowred}{RGB}{245, 183, 177}
+\definecolor{darkblue}{rgb}{0, 0, 0.5}
+
+\definecolor{grass}{RGB}{0, 148, 50}
+\definecolor{mypurple}{RGB}{108, 92, 231}
+
+\def\pnode [#1]#2{
+	% node for the potential function
+	\node[regular polygon,regular polygon sides=4, minimum size=1pt,fill=gray,#1, inner sep = 1.2pt] (#2) {};
+} 
+\tikzset{middlefactor/.style={decoration={
+			markings,
+			mark= at position #1 with {\pnode[]{}} 
+		},postaction={decorate}},
+	middlefactor/.default=0.5
+}
+
+\renewcommand{\cite}{\parencite}
+\newtheorem{theorem}{Theorem}%[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\newenvironment{proof}[1][Proof]{\begin{trivlist}
+		\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{definition}[1][Definition]{\begin{trivlist}
+		\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{assumption}[1][Assumption]{\begin{trivlist}
+		\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{example}[1][Example]{\begin{trivlist}
+		\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+		\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+\newcommand{\qed}{\nobreak \ifvmode \relax \else
+	\ifdim\lastskip<1.5em \hskip-\lastskip
+	\hskip1.5em plus0em minus0.5em \fi \nobreak
+	\vrule height0.65em width0.5em depth0.25em\fi}
+
+\makeatletter
+\def\adl@drawiv#1#2#3{%
+	\hskip.5\tabcolsep
+	\xleaders#3{#2.5\@tempdimb #1{1}#2.5\@tempdimb}%
+	#2\z@ plus1fil minus1fil\relax
+	\hskip.5\tabcolsep}
+\newcommand{\cdashlinelr}[1]{%
+	\noalign{\vskip\aboverulesep
+		\global\let\@dashdrawstore\adl@draw
+		\global\let\adl@draw\adl@drawiv}
+	\cdashline{#1}
+	\noalign{\global\let\adl@draw\@dashdrawstore
+		\vskip\belowrulesep}}
+\def\blfootnote{\xdef\@thefnmark{}\@footnotetext}
+\makeatother
+
+\begin{document}
+
+\frontmatter % Use roman page numbering style (i, ii, iii, iv...) for the pre-content pages
+
+\pagestyle{plain} % Default to the plain heading style until the thesis style is called for the body content
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\begin{titlepage}
+\begin{center}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{Figures/SUTD}
+\end{figure}
+
+ \hfill\break\\[2.3cm]
+
+{\huge \bfseries \ttitle}\\[2cm] % Thesis title
+
+
+Submitted by\\[1cm]
+\authorname % Author name - remove the \href bracket to remove the link
+
+\vspace{4em}
+
+Thesis Advisor\\[1cm]
+\supname % Supervisor name - remove the \href bracket to remove the link
+
+\vspace{4em}
+
+\pillarname\\[1.5cm] % Research group name and department name
+
+\large{A thesis submitted to the Singapore University of Technology and Design in fulfillment of the requirement for the degree of \degreename}\\[1cm] % University requirement text
+
+
+{\large \the\year}\\[4cm] % Date
+%\includegraphics{Logo} % University/department logo - uncomment to place it
+
+\vfill
+\end{center}
+\end{titlepage}
+
+%----------------------------------------------------------------------------------------
+%	DECLARATION PAGE
+%----------------------------------------------------------------------------------------
+
+\begin{tec}
+\addchaptertocentry{\tecname}
+\begin{tabular}{ll}
+	TEC Chair: & Prof. Ngai-Man Cheung \\
+	Main Advisor: & Prof. Wei Lu \\
+%	Co-advisor(s): & Prof. XXXX (if any) \\
+	Internal TEC member 1: & Prof. Shaowei Lin \\
+	Internal TEC member 2: & Prof. Dario Poletti \\
+	External TEC member 1: & Prof. Jing Jiang (Singapore Management University) \\
+%	External TEC member 2: & Prof. XXXX (optional) \\
+\end{tabular}
+\end{tec}
+\vfill\eject
+
+%----------------------------------------------------------------------------------------
+%	DECLARATION PAGE
+%----------------------------------------------------------------------------------------
+
+%\begin{declaration}
+%\addchaptertocentry{\authorshipname}
+%
+%% \noindent I, \authorname, declare that this thesis titled, \enquote{\ttitle} and the work presented in it are my own. I confirm that:
+%%
+%% \begin{itemize}
+%% \item This work was done wholly or mainly while in candidature for a research degree at this University.
+%% \item Where any part of this thesis has previously been submitted for a degree or any other qualification at this University or any other institution, this has been clearly stated.
+%% \item Where I have consulted the published work of others, this is always clearly attributed.
+%% \item Where I have quoted from the work of others, the source is always given. With the exception of such quotations, this thesis is entirely my own work.
+%% \item I have acknowledged all main sources of help.
+%% \item Where the thesis is based on work done by myself jointly with others, I have made clear exactly what was done by others and what I have contributed myself.\\
+%% \end{itemize}
+%
+%I hereby confirm the following:
+%\begin{itemize}
+%\item I hereby confirm that the thesis work is original and has not been submitted to any other University or Institution for higher degree purposes.
+%\item I hereby grant SUTD the permission to reproduce and distribute publicly paper and electronic copies of this thesis document in whole or in part in any medium now known or hereafter created in accordance with Policy on Intellectual Property, clause 4.2.2.
+%\item I have fulfilled all requirements as prescribed by the University and provided 1 copy of my thesis in PDF.
+%\item I have attached all publications and award list related to the thesis (e.g. journal, conference report and patent).
+%\item The thesis does / does not (delete accordingly) contain patentable or confidential information.
+%\item I certify that the thesis has been checked for plagiarism via turnitin/ithenticate. The score is 100\%.
+%\end{itemize}
+%
+%\noindent Name and signature:\\
+%\rule[0.5em]{25em}{0.5pt} % This prints a line for the signature
+%
+%\noindent Date:\\
+%\rule[0.5em]{25em}{0.5pt} % This prints a line to write the date
+%\end{declaration}
+
+%\vfill
+\cleardoublepage
+
+%----------------------------------------------------------------------------------------
+%	QUOTATION PAGE
+%----------------------------------------------------------------------------------------
+
+% Uncomment for quotation page
+ \vspace*{0.2\textheight}
+
+ \noindent\enquote{\itshape When you embrace stress, you can transform fear into courage, isolation into connection, and suffering into meaning.}\bigbreak
+
+ \hfill Kelly McGonigal
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT PAGE
+%----------------------------------------------------------------------------------------
+
+\begin{abstract}
+\addchaptertocentry{\abstractname} % Add the abstract to the table of contents
+
+
+
+Syntactic dependency structures leverage shallow semantic information, which could be helpful for downstream tasks in natural language processing (NLP). 
+In this thesis, we present some of our recent works on improving named entity recognition (NER) and semantic parsing by making use of the rich structured information in the dependency trees. 
+We statistically show the strong correlation between the dependency trees and named entities. 
+Specifically, named entities often form subtrees under the dependency tree structures, and the dependency relations (e.g. \textit{nsubj}) are strong indicators for the existence of entities. 
+Motivated by the above observations, we proposed the dependency-guided structured models based on the conditional random fields (CRF) to capture the underlying correlations for the NER task. 
+Our large-scale experiments on four languages demonstrate the effectiveness of the proposed model, especially for the Catalan and Spanish languages. 
+Further analysis reveals that the improvements mainly result from the dependency relations and long-distance interactions provided by dependency trees.
+
+Our following research work attacks a more challenging and semantic-level task, semantic parsing without the given dependency trees. 
+The semantic parsing task is to map the natural language sentences into (tree-structured) logical forms. 
+We introduce a dependency-based hybrid tree representation to capture the interactions between the semantic units and the natural language words.
+However, as the dependency trees are not observed, we regard the dependency trees as the latent structures in our proposed latent-variable model. 
+Our dynamic-programming inference procedure is similar to the Eisner's algorithm for dependency parsing. 
+The proposed model achieves state-of-the-art performance on 7 out of 8 languages, especially for some datasets with flexible word order. 
+
+%The core of these proposed models are based on structured prediction. 
+%Different structured prediction models 
+
+{\paragraph{Keyword:} Dependency Trees, Structured Prediction, Named Entity Recognition, Semantic Parsing, Dynamic Programming
+}
+
+%The Thesis Abstract is written here (and usually kept to just this page). The page is kept centered vertically so can expand into the blank space above the title too\ldots
+
+\end{abstract}
+
+%----------------------------------------------------------------------------------------
+%	Publications
+%----------------------------------------------------------------------------------------
+
+\begin{publications}
+\addchaptertocentry{\publicationsname} % Add the abstract to the table of contents
+
+\begin{itemize}
+	\item \textbf{Zhanming Jie} and Wei Lu. 2019. Dependency-Guided LSTM-CRF for Named Entity Recognition. In \textit{Proceedings of EMNLP.}
+	\item \textbf{Zhanming Jie}, Pengjun Xie, Wei Lu, Ruixue Ding and Linlin Li. 2019. Better Modeling of Incomplete Annotations for Named Entity Recognition. In \textit{Proceedings of NAACL.}
+	\item \textbf{Zhanming Jie} and Wei Lu. 2018. Dependency-based Hybrid Tree for Semantic Parsing. In \textit{Proceedings of EMNLP.}
+	\item Chu Guo, \textbf{Zhanming Jie}, Wei Lu and Dario Poletti. 2018. Matrix Product Operators for Sequence to Sequence Learning. In \textit{Physical Review E.}
+	\item \textbf{Zhanming Jie}, Aldrian Obaja Muis, and Wei Lu. 2017. Efficient Dependency-Guided Named Entity Recognition. In \textit{Proceedings of the AAAI.}
+	\item \textbf{Zhanming Jie}, Ming Cheung, and James She. A Cloud-Assisted Framework for Bag-of-Features Tagging in Social Networks. 2015. In \textit{IEEE Fourth Symposium on Network Cloud Computing and Applications.}
+	\item Alvin Junus, Ming Cheung, James She, and \textbf{Zhanming Jie}. 2015. Community-Aware Prediction of Virality Timing Using Big Data of Social Cascades. In \textit{Proceedings of IEEE BigDataService.}
+	\item Ming Cheung, James She, and \textbf{Zhanming Jie}. 2015. Connection Discovery Using Big Data of User-Shared Images in Social Media. In \textit{IEEE Transactions on Multimedia.}
+	\item \textbf{Zhanming Jie} and Wei Lu. 2014. Multilingual Semantic Parsing: Parsing Multiple Languages into Semantic Representations. In \textit{Proceedings of COLING.}
+\end{itemize}
+
+\end{publications}
+
+%----------------------------------------------------------------------------------------
+%	ACKNOWLEDGEMENTS
+%----------------------------------------------------------------------------------------
+
+\begin{acknowledgements}
+\addchaptertocentry{\acknowledgementname} % Add the acknowledgements to the table of contents
+
+First and foremost, I'm very grateful to have Prof. Wei Lu as my PhD advisor. 
+Without a doubt, I have a lot of for him.
+What I have learned from him during these years will benefit me for the rest of my life.  
+He is the person who is sincerely serious about research, which really impresses me.
+I first met Prof. Wei Lu in 2014 when I did my internship with him and I knew nothing about NLP. 
+%He worked day and night and often went home at around 3 am. 
+He is extremely efficient and focused during working. 
+He taught me what correct attitude is to research, how to do good research in terms of reading, writing, my presentation skill, and more importantly, how to think independently as a researcher. 
+All of the things that he endowed me and I have learned from him can not be simply stated in a few sentences. 
+But I really appreciate that I can spend these four years with him. 
+
+
+I would like to thank my mother and brother for their support during my PhD study. 
+They do not give me pressure and support most of the decisions I made, though my mom is sometimes a bit immature and she is the ``funniest'' one in the family.
+When I get into trouble like mental problems, I often seek help from my brother.  
+Talking to him makes me feel better and he is the one usually talks a lot though what he said is not really helpful. 
+I really enjoy the happiness and joy in this family.
+
+Throughout my PhD study, there are a lot of friends who have provided their help to me. 
+Aldrian, who was previously a research assistant in our group, gave me tremendous guidance in my first year. 
+He is a really smart and also very friendly teacher to me. 
+Raymond and Li Hao had a lot of research discussions with me during my PhD study. 
+Besides research, we chat with each other on our PhD life. 
+I really appreciate the conversations with them as it sometimes helps me get away from the pressure of ``tough'' research.
+Gary and I joined the PhD program together back to Jan 2016. 
+Yuqi and Gary are my best friends since I join SUTD. 
+We took classes together, played together and talk about everything. 
+I really appreciate the time that we spent in our PhD study and wish them a promising fortune in the future. 
+Of course, there are so many friends and team members that I haven't mentioned but I'm really grateful for their appearance in my life. 
+PhD life sometimes is tough. 
+Because of them, it makes my life more fun and more wonderful. 
+
+After finishing the defense, I really appreciate Prof. Jiang Jing for her comments on this thesis. 
+I have a lot respect to her in the field of natural language processing. 
+She read through the thesis and wrote many useful comments especially some of them are really inspiring for my future research direction. 
+I would also love to work with Prof. Jiang Jing in the future. 
+
+Last but certainly not least, I would like to thank the one inside my heart (\textit{i.e.}, myself) for insisting on the PhD study. 
+Four years ago, you had already gone through 1-year PhD life and I know that was a really tough and stressed time for you.
+Thus, you quit that PhD and Prof. Wei Lu gave you a second chance to demonstrate yourself. 
+But I know you were still very stressed and somehow you might have lost your faith in doing the PhD. 
+You were even thinking that you do not have any talents in doing research. 
+Though you published some papers, you also failed so many research topics. 
+After several failures, you doubted yourself, questioned yourself and denied yourself that you can do a good job. 
+Later on, you realized that it is not about just research and publishing papers. 
+You realized that you love doing research, especially good research.
+No matter if you can publish in the top conference or not, you still love doing research. 
+As your advisor requires, I hope  you are already an independent researcher now. 
+I hope you can keep doing great research in the future and do not forget your original motivation for doing a PhD.
+
+
+
+
+
+
+
+
+\end{acknowledgements}
+
+%----------------------------------------------------------------------------------------
+%	LIST OF CONTENTS/FIGURES/TABLES PAGES
+%----------------------------------------------------------------------------------------
+
+\tableofcontents % Prints the main table of contents
+
+\listoffigures % Prints the list of figures
+
+\listoftables % Prints the list of tables
+
+%----------------------------------------------------------------------------------------
+%	ABBREVIATIONS
+%----------------------------------------------------------------------------------------
+
+% Uncomment for abbreviations page
+ \begin{abbreviations}{ll} % Include a list of abbreviations (a table of two columns)
+
+	 \textbf{NLP} & \textbf{N}atural  \textbf{L}anguage \textbf{P}rocessing\\
+ \textbf{NER} & \textbf{N}amed \textbf{E}entity \textbf{R}ecognition\\
+  \textbf{HMM} & \textbf{H}idden \textbf{M}arkov \textbf{M}odel\\
+    \textbf{MEMM} & \textbf{M}aximum \textbf{E}ntropy \textbf{M}arkov \textbf{M}odel\\
+ \textbf{CRF} & \textbf{C}onditional \textbf{R}andom \textbf{F}ield\\
+ \textbf{LSTM} & \textbf{L}ong \textbf{S}ort-\textbf{T}erm \textbf{M}emory\\
+\textbf{DGM} & \textbf{D}ependency-\textbf{G}uided \textbf{M}odel\\
+\textbf{SQL} & \textbf{S}tructured \textbf{Q}uery \textbf{L}anguage\\
+\textbf{AMR} & \textbf{A}bstract \textbf{M}eaning \textbf{R}epresentation\\
+\textbf{DGLSTM} & \textbf{D}ependency \textbf{G}uided LSTM\\
+\textbf{NL} & \textbf{N}atural \textbf{L}anguage \\
+\textbf{MR} & \textbf{M}eaning \textbf{R}epresentation \\
+\textbf{MST} & \textbf{M}aximum \textbf{S}panning \textbf{T}ree \\
+\textbf{GCN} & \textbf{G}raph \textbf{C}onvolutional \textbf{N}etwork \\
+
+
+
+ \end{abbreviations}
+
+%----------------------------------------------------------------------------------------
+%	PHYSICAL CONSTANTS/OTHER DEFINITIONS
+%----------------------------------------------------------------------------------------
+
+% Uncomment for physical constants etc
+% \begin{constants}{lr@{${}={}$}l} % The list of physical constants is a three column table
+%
+% % The \SI{}{} command is provided by the siunitx package, see its documentation for instructions on how to use it
+%
+% 	Speed of Light & $c_{0}$ & \SI{2.99792458e8}{\meter\per\second} (exact)\\
+% %Constant Name & $Symbol$ & $Constant Value$ with units\\
+%
+% \end{constants}
+
+%----------------------------------------------------------------------------------------
+%	SYMBOLS
+%----------------------------------------------------------------------------------------
+
+% Uncomment for symbols
+% \begin{symbols}{lll} % Include a list of Symbols (a three column table)
+%
+% $a$ & distance & \si{\meter} \\
+% $P$ & power & \si{\watt} (\si{\joule\per\second}) \\
+% %Symbol & Name & Unit \\
+%
+% \addlinespace % Gap to separate the Roman symbols from the Greek
+%
+% $\omega$ & angular frequency & \si{\radian} \\
+%
+% \end{symbols}
+
+%----------------------------------------------------------------------------------------
+%	DEDICATION
+%----------------------------------------------------------------------------------------
+
+\dedicatory{To my mom and brother, for their endless support.}
+
+%----------------------------------------------------------------------------------------
+%	THESIS CONTENT - CHAPTERS
+%----------------------------------------------------------------------------------------
+
+\mainmatter % Begin numeric (1,2,3...) page numbering
+
+\pagestyle{thesis} % Return the page headers back to the "thesis" style
+
+% Include the chapters of the thesis as separate files from the Chapters folder
+% Uncomment the lines as you write the chapters
+
+\include{Chapters/Chapter1}
+\include{Chapters/Chapter2}
+\include{Chapters/Chapter3}
+\include{Chapters/Chapter4}
+\include{Chapters/Chapter5}
+\include{Chapters/Chapter6}
+\include{Chapters/Chapter7}
+\include{Chapters/Chapter8}
+
+%----------------------------------------------------------------------------------------
+%	THESIS CONTENT - APPENDICES
+%----------------------------------------------------------------------------------------
+
+%\appendix % Cue to tell LaTeX that the following "chapters" are Appendices
+
+% Include the appendices of the thesis as separate files from the Appendices folder
+% Uncomment the lines as you write the Appendices
+
+%\include{Appendices/AppendixA}
+%\include{Appendices/AppendixB}
+%\include{Appendices/AppendixC}
+
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+
+\printbibliography[heading=bibintoc]
+
+%----------------------------------------------------------------------------------------
+
+\end{document}
